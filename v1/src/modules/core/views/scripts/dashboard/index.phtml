@@ -1,0 +1,110 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		core
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-09-15
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php
+$this->style()->appendStylesheet($this->APP_STATIC_URL . '/modules/core/css/admin/default/styles.css')
+			  ->appendStylesheet($this->APP_STATIC_URL . '/static/js/dojo/' . APP_DOJO_VER . '/dojox/layout/resources/GridContainer.css')
+			  ->appendStylesheet($this->APP_STATIC_URL . '/static/js/dojo/' . APP_DOJO_VER . '/dojox/widget/Portlet/Portlet.css');
+$this->headTitle()->set($this->translator()->_('dashboard.index.title'));
+?>
+
+<div id="coreDashboardIndexContainer" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design: 'headline', gutters: true, region: 'center', style: 'height: 100%; padding: 0; width: 100%'">
+	<!-- Toolbar -->
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'top', splitter: false, style: 'height: 40px'">
+		<div id="coreDashboardIndexToolbar"></div>
+	</div>
+	<!-- /Toolbar -->
+	
+	<!-- Layout -->
+	<div id="coreDashboardIndexLayout" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="region: 'center', style: 'height: 100%; width: 100%', class: 'app-container-border'">
+	</div>
+	<!-- /Layout -->
+</div>
+
+<?php $this->script()->captureStart(); ?>
+require([
+	"dojo/aspect",
+	"dojo/hash",
+	"dojo/json",
+	"dojo/request/xhr",
+	"dojo/ready",
+	"dojo/topic",
+	"dijit/registry",
+	"dojo/parser",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"core/js/base/controllers/ActionProvider",
+	"core/js/controllers/LayoutController",
+	"core/js/base/views/Helper",
+	"core/js/views/LayoutToolbar"
+], function(dojoAspect, dojoHash, dojoJson, dojoRequestXhr, dojoReady, dojoTopic, dijitRegistry) {
+	dojoReady(function() {
+		// Don't load the widgets on user's dashboard if user is viewing other page
+		if ("" == dojoHash()) {
+			// Provide the actions
+			<?php foreach (array(
+							'core_extension_render',
+						) as $name) : ?>
+			core.js.base.controllers.ActionProvider.set("<?php echo $name; ?>", {
+				url: "<?php echo $this->url(array(), $name); ?>",
+				isAllowed: true
+			});
+			<?php endforeach; ?>
+			
+			var layoutData = <?php if ($this->layout) : ?><?php echo $this->layout; ?><?php else : ?>{"containers":[{"containers":[],"cls":"dojox.layout.GridContainer","numZones":3}],"cls":"dijit/layout/BorderContainer","region":"center","style":"height: 100%; width: 100%"}<?php endif; ?>;
+			
+			var layoutController = new core.js.controllers.LayoutController("coreDashboardIndexLayout");
+			layoutController.setLayoutToolbar(new core.js.views.LayoutToolbar("coreDashboardIndexToolbar"))
+							.setLayoutData(layoutData);
+			// In Dojo 1.8.0, I cannot understand why
+			// dijitRegistry.byId("coreDashboardIndexContainer") return "undefined"
+			// The workaround here is that wait for long-enough time using setTimeout()
+			setTimeout(function() {
+				layoutController.switchToMode("preview");
+			}, 200);
+			
+			// Save layout handler
+			var helper = new core.js.base.views.Helper("coreDashboardIndexContainer");
+			dojoAspect.after(layoutController, "onSaveLayout", function(layoutData) {
+				helper.setModule("core").showStandby();
+				dojoRequestXhr("<?php echo $this->url(array(), 'core_dashboard_index'); ?>", {
+					data: {
+						format: "json",
+						layout: dojoJson.stringify(layoutData)
+					},
+					handleAs: "json",
+					method: "POST"
+				}).then(function(data) {
+					helper.hideStandby();
+					var message = ("APP_RESULT_OK" == data.result)
+								? "<?php echo $this->translator()->_('dashboard.index.success'); ?>" 
+								: "<?php echo $this->translator()->_('dashboard.index.error'); ?>";
+					dojoTopic.publish("/app/global/notification", {
+						message: message,
+						type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+					});
+					
+					if ("APP_RESULT_OK" == data.result) {
+						layoutController.setLayoutData(layoutData);
+					}
+				});
+			}, true);
+		}
+	});
+});
+<?php $this->script()->captureEnd(); ?>

@@ -1,0 +1,507 @@
+/**
+ * NextCMS
+ *
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	templates
+ * @package		admin
+ * @subpackage	skins
+ * @since		1.0
+ * @version		2012-09-14
+ */
+
+/* ========== LAYOUT ======================================================== */
+html, body {
+	margin: 0;
+	overflow: hidden;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+.app-layout-container {
+	border: 0;
+	height: 100%;
+	width: 100%;
+}
+.app-layout-poweredby {
+	position: absolute;
+		top: 10px;
+		right: 15px;
+	z-index: 1000;
+}
+
+/* Loader */
+.app-layout-loader {
+	background: #ededed url(images/loading.gif) center center no-repeat;
+	margin: 0;
+	padding: 0;
+	position: absolute;
+		top: 0;
+		left: 0;
+	vertical-align: middle;
+	width: 100%;
+	height: 100%;
+	z-index: 999;
+}
+.app-layout-loader div:first-child {
+	font-size: 1.364em;
+	margin: 0 auto;
+	margin-top: 15px;
+	position: absolute;
+		top: 50%;
+	text-align: center;
+	width: 100%;
+}
+
+/* Login */
+.app-login {
+	margin-top: -80px;
+	position: absolute;
+		top: 50%;
+	width: 100%;
+}
+.app-login-inner {
+	margin: 0 auto;
+	width: 400px;
+}
+
+/* ========== COMMON ======================================================== */
+.app-container-border {
+	border: 1px solid #B5BCC7 !important;
+}
+.app-container-bar {
+	background: #efefef url(images/container-bar.png) top repeat-x;
+	border: 1px solid #b5bcc7;
+	min-height: 17px;
+	padding: 3px 7px 3px 7px;
+	vertical-align: middle;
+}
+.app-center {
+	position: absolute;
+		top: 49%;
+	width: 100%;
+}
+.app-center div:first-child {
+	margin: 0 8px;
+	text-align: center;
+}
+.app-clear {
+	clear: both;
+	height: 1px;
+}
+.app-left {
+	float: left;
+}
+.app-right {
+	float: right;
+}
+.app-separator {
+	background-color: #ededed;
+	border: 0;
+	width: 100%;
+	height: 1px;
+}
+
+/* Counter */
+.app-counter {
+	background: #9DCFFF;
+	border-radius: 4px;
+		-moz-border-radius: 4px;
+	color: #333;
+	margin-left: 8px;
+	padding: 2px 8px;
+}
+b.app-counter {
+	font-weight: normal;
+}
+
+/* Heading */
+.app-heading {
+	background: url(images/heading.jpg) left center repeat-x;
+	clear: both;
+	position: relative;
+}
+.app-heading span {
+	background-color: #f9f9f9;
+	color: #444;
+	display: inline;
+	margin: 0px;
+	padding-right: 4px;
+}
+
+/* Form */
+.app-form label {
+	float: left;
+	margin-right: 10px;
+	text-align: right;
+	width: 150px;
+}
+.app-form div.app-form-row,
+.app-form div.app-form-row-vertical {
+	clear: both;
+	margin-bottom: 5px;
+}
+.app-form div.app-form-row-vertical label {
+	padding-bottom: 4px;
+	text-align: left;
+	width: 100%;
+}
+
+/* Paginator */
+.app-paginator {
+	border-bottom: none !important;
+	border-top: 1px solid #B5BCC7;
+}
+.app-paginator .app-paginator-active {
+	background-color: #abd6ff;
+	border-radius: 2px;
+		-moz-border-radius: 2px;
+}
+.app-paginator-inner span {
+	height: 25px;
+	line-height: 25px;
+	padding: 5px;
+	text-align: center;
+}
+.app-paginator-inner .app-paginator-page {
+	background: #cfe5fa;
+}
+.app-paginator-inner .app-paginator-disabled {}
+.app-paginator-inner .app-paginator-active {
+	background: #769dc0;
+	color: #fff;
+}
+.app-paginator-first {
+	background-image: url(images/paginator-first.png);
+}
+.app-paginator-last {
+	background-image: url(images/paginator-last.png);
+}
+.app-paginator-next {
+	background-image: url(images/paginator-next.png);
+}
+.app-paginator-prev {
+	background-image: url(images/paginator-prev.png);
+}
+
+/* ========== OVERRIDE DOJO THEME =========================================== */
+/* dijit.Dialog */
+.claro .dijitDialogUnderlay {
+	background: #a1a1a1;
+}
+.claro .dijitTextBoxDisabled input {
+	color: #333;
+}
+
+/* dijit.layout.ContentPane */
+.app-content-pane {
+	padding: 8px !important;
+}
+.claro .dijitContentPane {
+	padding: 0;
+}
+.claro .dijitContentPaneLoading {
+	margin: 8px !important;
+}
+
+/* dijit.Menu */
+td.dijitMenuItemLabel a {
+	text-decoration: none;
+}
+
+/* dojox.highlight */
+.claro pre,
+.claro code {
+	background: #FFF;
+	border: none;
+	font-size: 100%;
+}
+
+/* dojox.widget.Toaster */
+.dijitToasterContainer {
+	font: 10px Verdana, Arial, Helvetica, sans-serif !important;
+}
+.dijitToasterContent {
+	background: #73C74A;	
+	padding: 0.25em 1em 1em 1em;
+}
+.dijitToasterMessage {
+	color: #FFF;
+}
+
+/* Dnd */
+.claro .dojoDndItemOver,
+.claro .dojoDndItemAnchor,
+.claro .dojoDndItemSelected {
+	padding: 0 !important;
+	border: 0px !important;
+}
+
+/* ========== ICONS ========================================================= */
+.app-icon {
+	background-repeat: no-repeat;
+	display: inline-block;
+	text-align: center;
+	vertical-align: middle;
+	width: 16px;
+	height: 16px;
+}
+.app-icon-activate {
+	background-image: url(images/activate.png);
+}
+.app-icon-add {
+	background-image: url(images/add.png);
+}
+.app-icon-bookmark {
+	background-image: url(images/bookmark.png);
+}
+.app-icon-cancel {
+	background-image: url(images/cancel.png);
+}
+.app-icon-collapse {
+	background-image: url(images/collapse.png);
+}
+.app-icon-config {
+	background-image: url(images/config.png);
+}
+.app-icon-copy {
+	background-image: url(images/copy.png);
+}
+.app-icon-deactivate {
+	background-image: url(images/deactivate.png);
+}
+.app-icon-delete {
+	background-image: url(images/delete.png);
+}
+.app-icon-down {
+	background-image: url(images/down.png);
+}
+.app-icon-download {
+	background-image: url(images/download.png);
+}
+.app-icon-expand {
+	background-image: url(images/expand.png);
+}
+.app-icon-export {
+	background-image: url(images/export.png);
+}
+.app-icon-file {
+	background-image: url(images/file.png);
+}
+.app-icon-filter {
+	background-image: url(images/filter.png);
+}
+.app-icon-home {
+	background-image: url(images/home.png);
+}
+.app-icon-horizontal {
+	background-image: url(images/horizontal.png);
+}
+.app-icon-image {
+	background-image: url(images/image.png);
+}
+.app-icon-import {
+	background-image: url(images/import.png);
+}
+.app-icon-link {
+	background-image: url(images/link.png);
+}
+.app-icon-lock {
+	background-image: url(images/lock.png);
+}
+.app-icon-message {
+	background-image: url(images/message.png);
+}
+.app-icon-openid {
+	background-image: url(images/openid.png);
+}
+.app-icon-paste {
+	background-image: url(images/paste.png);
+}
+.app-icon-profile {
+	background-image: url(images/profile.png);
+}
+.app-icon-redo {
+	background-image: url(images/redo.png);
+}
+.app-icon-redo-disabled {
+	background-image: url(images/redo-disabled.png);
+}
+.app-icon-refresh {
+	background-image: url(images/refresh.png);
+}
+.app-icon-rename {
+	background-image: url(images/rename.png);
+}
+.app-icon-run {
+	background-image: url(images/run.png);
+}
+.app-icon-save {
+	background-image: url(images/save.png);
+}
+.app-icon-search {
+	background-image: url(images/search.png);
+}
+.app-icon-sort-asc {
+	background-image: url(images/sort-asc.png);
+}
+.app-icon-sort-desc {
+	background-image: url(images/sort-desc.png);
+}
+.app-icon-star {
+	background-image: url(images/star.png);
+}
+.app-icon-trash-empty {
+	background-image: url(images/trash-empty.png);
+}
+.app-icon-trash-empty-big {
+	background: url(images/trash-empty-big.png) center center no-repeat;
+	cursor: pointer;
+	width: 64px;
+	height: 64px;
+}
+.app-icon-trash-full {
+	background-image: url(images/trash-full.png);
+}
+.app-icon-trash-full-big {
+	background: url(images/trash-full-big.png) center center no-repeat;
+	cursor: pointer;
+	width: 64px;
+	height: 64px;
+}
+.app-icon-undo {
+	background-image: url(images/undo.png);
+}
+.app-icon-undo-disabled {
+	background-image: url(images/undo-disabled.png);
+}
+.app-icon-unlock {
+	background-image: url(images/unlock.png);
+}
+.app-icon-unstar {
+	background-image: url(images/unstar.png);
+}
+.app-icon-upload {
+	background-image: url(images/upload.png);
+}
+.app-icon-up {
+	background-image: url(images/up.png);
+}
+.app-icon-vertical {
+	background-image: url(images/vertical.png);
+}
+.app-icon-video {
+	background-image: url(images/video.png);
+}
+
+/* ========== FLAGS ========================================================= */
+.app-flag-bg_BG {
+	background-image: url(flags/bg_BG.png);
+}
+.app-flag-cs_CZ {
+	background-image: url(flags/cs_CZ.png);
+}
+.app-flag-da_DK {
+	background-image: url(flags/da_DK.png);
+}
+.app-flag-de_DE {
+	background-image: url(flags/de_DE.png);
+}
+.app-flag-en_US {
+	background-image: url(flags/en_US.png);
+}
+.app-flag-es_ES {
+	background-image: url(flags/es_ES.png);
+}
+.app-flag-es_MX {
+	background-image: url(flags/es_MX.png);
+}
+.app-flag-fa_IR {
+	background-image: url(flags/fa_IR.png);
+}
+.app-flag-fi_FI {
+	background-image: url(flags/fi_FI.png);
+}
+.app-flag-fr_FR {
+	background-image: url(flags/fr_FR.png);
+}
+.app-flag-he_IL {
+	background-image: url(flags/he_IL.png);
+}
+.app-flag-hu_HU {
+	background-image: url(flags/hu_HU.png);
+}
+.app-flag-id_ID {
+	background-image: url(flags/id_ID.png);
+}
+.app-flag-is_IS {
+	background-image: url(flags/is_IS.png);
+}
+.app-flag-it_IT {
+	background-image: url(flags/it_IT.png);
+}
+.app-flag-ja_JP {
+	background-image: url(flags/ja_JP.png);
+}
+.app-flag-ko_KR {
+	background-image: url(flags/ko_KR.png);
+}
+.app-flag-mk_MK {
+	background-image: url(flags/mk_MK.png);
+}
+.app-flag-nb_NO {
+	background-image: url(flags/nb_NO.png);
+}
+.app-flag-nl_NL {
+	background-image: url(flags/nl_NL.png);
+}
+.app-flag-pl_PL {
+	background-image: url(flags/pl_PL.png);
+}
+.app-flag-pt_BR {
+	background-image: url(flags/pt_BR.png);
+}
+.app-flag-pt_PT {
+	background-image: url(flags/pt_PT.png);
+}
+.app-flag-ro_RO {
+	background-image: url(flags/ro_RO.png);
+}
+.app-flag-ru_RU {
+	background-image: url(flags/ru_RU.png);
+}
+.app-flag-sl_SI {
+	background-image: url(flags/sl_SI.png);
+}
+.app-flag-sr_RS {
+	background-image: url(flags/sr_RS.png);
+}
+.app-flag-sv_SE {
+	background-image: url(flags/sv_SE.png);
+}
+.app-flag-th_TH {
+	background-image: url(flags/th_TH.png);
+}
+.app-flag-uk_UA {
+	background-image: url(flags/uk_UA.png);
+}
+.app-flag-uz_UZ {
+	background-image: url(flags/uz_UZ.png);
+}
+.app-flag-vi_VN {
+	background-image: url(flags/vi_VN.png);
+}
+.app-flag-zh_CN {
+	background-image: url(flags/zh_CN.png);
+}
+.app-flag-zh_HK {
+	background-image: url(flags/zh_HK.png);
+}
+.app-flag-zh_SG {
+	background-image: url(flags/zh_SG.png);
+}
+.app-flag-zh_TW {
+	background-image: url(flags/zh_TW.png);
+}

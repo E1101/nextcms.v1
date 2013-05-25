@@ -1,0 +1,87 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		seo
+ * @subpackage	plugins
+ * @since		1.0
+ * @version		2012-08-27
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<div style="padding: 0 8px 0 0">
+	<input id="seoPluginsRedirectorConfigSourceTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', style: 'width: 200px; margin: 0 4px', placeHolder: '<?php echo $this->translator(true)->_('config.sourceUrl'); ?>', missingMessage: '<?php echo $this->translator(true)->_('config.sourceUrlRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('config.urlValidator'); ?>'" />
+	<input id="seoPluginsRedirectorConfigDestTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', style: 'width: 200px; margin: 0 4px', placeHolder: '<?php echo $this->translator(true)->_('config.destinationUrl'); ?>', missingMessage: '<?php echo $this->translator(true)->_('config.destinationUrlRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('config.urlValidator'); ?>'" />
+	<button data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+		<?php echo $this->translator()->_('config.addAction'); ?>
+		<script type="dojo/on" data-dojo-event="click">
+		require([
+			"dojo/dom-construct",
+			"dijit/registry"
+		], function(dojoDomConstruct, dijitRegistry) {
+			var div = dojoDomConstruct.create("div", {
+				className: "seoPluginsRedirectorConfigItem",
+				style: "padding-bottom: 4px"
+			}, "seoPluginsRedirectorConfigUrls");
+			
+			new dijit.form.ValidationTextBox({
+				name: "source_urls[]",
+				style: "width: 200px; margin: 0 4px",
+				value: dijitRegistry.byId("seoPluginsRedirectorConfigSourceTextBox").get("value")
+			}).placeAt(div);
+	
+			new dijit.form.ValidationTextBox({
+				name: "destination_urls[]",
+				style: "width: 200px; margin: 0 4px",
+				value: dijitRegistry.byId("seoPluginsRedirectorConfigDestTextBox").get("value")
+			}).placeAt(div);
+	
+			new dijit.form.Button({
+				label: "<?php echo $this->translator()->_('config.deleteAction'); ?>",
+				onClick: function() {
+					dojoDomConstruct.destroy(div);
+				}
+			}).placeAt(div);
+		});
+		</script>
+	</button>
+</div>
+
+<div id="seoPluginsRedirectorConfigUrls">
+<?php if ($this->urls) : ?>
+	<?php foreach ($this->urls as $source => $destination) : ?>
+	<div class="seoPluginsRedirectorConfigItem" style="padding-bottom: 4px">
+		<input data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', name: 'source_urls[]', value: '<?php echo addslashes($source); ?>', style: 'width: 200px; margin: 0 4px', placeHolder: '<?php echo $this->translator(true)->_('config.sourceUrl'); ?>', missingMessage: '<?php echo $this->translator(true)->_('config.sourceUrlRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('config.urlValidator'); ?>'" />
+		<input data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', name: 'destination_urls[]', value: '<?php echo addslashes($destination); ?>', style: 'width: 200px; margin: 0 4px', placeHolder: '<?php echo $this->translator(true)->_('config.sourceUrl'); ?>', missingMessage: '<?php echo $this->translator(true)->_('config.sourceUrlRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('config.urlValidator'); ?>'" />
+		<button data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+			<?php echo $this->translator()->_('config.deleteAction'); ?>
+			<script type="dojo/on" data-dojo-event="click">
+			var that = this;
+			require([
+				"dojo/dom-construct",
+				"dojo/NodeList-traverse",
+				"dojo/query"
+			], function(dojoDomConstruct) {
+				dojoDomConstruct.destroy(dojo.query(that.domNode).closest(".seoPluginsRedirectorConfigItem")[0]);
+			});
+			</script>
+		</button>
+	</div>
+	<?php endforeach; ?>
+<?php endif; ?>
+</div>
+
+<script type="text/javascript">
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/ValidationTextBox"	
+]);
+</script>

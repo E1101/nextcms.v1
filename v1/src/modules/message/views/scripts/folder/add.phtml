@@ -1,0 +1,75 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		message
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-08-24
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php 
+$this->headTitle()->set($this->translator()->_('folder.add.title'));
+?>
+
+<div id="messageFolderAddForm" data-dojo-type="dijit/form/Form" data-dojo-props="action: '', method: 'POST', class: 'app-form'">
+	<script type="dojo/method" data-dojo-event="onSubmit" data-dojo-args="e">
+	e.preventDefault();
+	var that = this;
+	require([
+		"dojo/dom-form",
+		"dojo/request/xhr",
+		"dojo/topic"
+	], function(dojoDomForm, dojoRequestXhr, dojoTopic) {
+		if (that.validate()) {
+			dojoRequestXhr("<?php echo $this->url(array(), 'message_folder_add'); ?>", {
+				data: dojoDomForm.toObject("messageFolderAddForm"),
+				handleAs: "json",
+				method: "POST"
+			}).then(function(data) {
+				that.reset();
+				dojoTopic.publish("/app/message/folder/add/onComplete", data);
+			});
+		}
+	});
+	</script>
+	
+	<div class="app-form-row-vertical">
+		<label for="name"><?php echo $this->translator()->_('folder._share.name'); ?>:</label>
+		<input id="messageFolderAddNameTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', name: 'name', style: 'width: 100%', required: true, missingMessage: '<?php echo $this->translator(true)->_('folder._share.nameRequired'); ?>'" />
+	</div>
+	
+	<div class="dijitDialogPaneActionBar">
+		<button id="messageFolderAddSaveButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'submit'">
+			<?php echo $this->translator()->_('global._share.addAction'); ?>
+		</button>
+		
+		<button id="messageFolderAddCancelButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+			<?php echo $this->translator()->_('global._share.cancelAction'); ?>
+			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+			require(["dojo/topic"], function(dojoTopic) {
+				dojoTopic.publish("/app/message/folder/add/onCancel");
+			});
+			</script>
+		</button>
+	</div>
+	
+	<input type="hidden" name="format" value="json" />
+</div>
+
+<script type="text/javascript">
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/ValidationTextBox"
+]);
+</script>

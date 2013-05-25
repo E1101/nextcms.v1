@@ -1,0 +1,131 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		core
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-09-12
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php 
+$this->headTitle()->set($this->translator()->_('openid.list.title'));
+?>
+
+<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="region: 'center', design: 'sidebar', gutters: false, class: 'app-container-border'">
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'top', class: 'app-content-pane'">
+		<h2 class="app-heading" style="margin: 0"><span><?php echo $this->translator()->_('openid.list.title'); ?></span></h2>
+	</div>
+
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'center', class: 'app-content-pane'">
+		<?php echo $this->flashMessenger(); ?>
+	
+		<!-- OpenIdUrls -->
+		<div style="padding-bottom: 8px" id="coreOpenIdListUrlsContainer">
+		<?php if (count($this->openIdUrls) == 0) : ?>
+			<?php echo $this->translator()->_('openid.list.notFound'); ?>
+		<?php else : ?>
+			<div style="padding-bottom: 8px"><?php echo $this->translator()->_('openid.list.help'); ?>:</div>
+			
+			<?php foreach ($this->openIdUrls as $index => $url) : ?>
+			<div class="coreOpenIdListUrlItem" style="padding-bottom: 4px">
+				<input data-dojo-type="dijit/form/TextBox" data-dojo-props="style: 'width: 400px', disabled: true, value: '<?php echo addslashes($url); ?>'" /> 
+				<button id="coreOpenIdListDeleteButton_<?php echo md5($url); ?>" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button', appOpenIdUrl: '<?php echo addslashes($url); ?>'">
+					<?php echo $this->translator()->_('global._share.deleteAction'); ?>
+					<script type="dojo/on" data-dojo-event="click">
+					var that = this;
+					require([
+						"dojo/_base/lang",
+						"dojo/dom-attr",
+						"dojo/io-query",
+						"dojo/topic",
+						"dojo/NodeList-dom",
+						"dojo/NodeList-traverse",
+						"dojo/query",
+						"dojox/widget/DialogSimple",
+						"core/js/base/controllers/Subscriber"
+					], function(dojoLang, dojoDomAttr, dojoIoQuery, dojoTopic) {
+						var params = {
+							openid_url: that.get("appOpenIdUrl")
+						};
+						var dialog = new dojox.widget.DialogSimple({
+							title: "<?php echo $this->translator()->_('openid.delete.title'); ?>",
+							loadingMessage: "<div style='text-align: center'><span class='dijitContentPaneLoading'><?php echo $this->translator()->_('global._share.loadingAction'); ?></span></div>",
+							style: "width: 250px",
+							refreshOnShow: true,
+							onCancel: function() {
+								dialog.destroyRecursive();
+							}
+						});
+						dojoTopic.subscribe("/app/core/openid/delete/onCancel", dojoLang.hitch(dialog, "onCancel"));
+
+						// I have to unsubscribe all handlers by the topic of "/app/core/openid/delete/onComplete"
+						core.js.base.controllers.Subscriber.unsubscribe("/app/core/openid/list", "/app/core/openid/delete/onComplete");
+
+						var handler = core.js.base.controllers.Subscriber.subscribe("/app/core/openid/list", "/app/core/openid/delete/onComplete", dialog, function(data) {
+							dialog.destroyRecursive();
+							var message = ("APP_RESULT_OK" == data.result)
+										? "<?php echo $this->translator()->_('openid.delete.success'); ?>"
+										: "<?php echo $this->translator()->_('openid.delete.error'); ?>";
+							dojoTopic.publish("/app/global/notification", {
+								message: message,
+								type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+							});
+	
+							// Remove the DIV container which shows the OpenID URL and the "Delete" button
+							if ("APP_RESULT_OK" == data.result) {
+								var container = dojo.query(that.domNode).closest(".coreOpenIdListUrlItem")[0];
+								dojo.query(container).orphan();
+							}
+	
+							if (dojo.query("#coreOpenIdListUrlsContainer .coreOpenIdListUrlItem").length == 0) {
+								dojoDomAttr.set("coreOpenIdListUrlsContainer", {
+									innerHTML: "<?php echo $this->translator()->_('openid.list.notFound'); ?>"
+								});
+							}
+	
+							handler.remove();
+						});
+						dialog.set("href", "<?php echo $this->url(array(), 'core_openid_delete'); ?>" + "?" + dojoIoQuery.objectToQuery(params));
+						dialog.show();
+					});
+					</script>
+				</button>
+			</div>
+			<?php endforeach; ?>
+		<?php endif; ?>
+		</div>
+		<!-- /OpenIdUrls -->
+	
+		<!-- AddOpenIdUrlForm -->
+		<div id="coreOpenIdListAddForm" data-dojo-type="dijit/form/Form" data-dojo-props="region: 'center', action: '<?php echo $this->url(array(), 'core_openid_add'); ?>', method: 'POST'">
+			<input id="coreOpenIdListOpenIdTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', name: 'openid_url', style: 'width: 400px', required: true, placeHolder: '<?php echo $this->translator(true)->_('user._share.openIdUrl'); ?>', promptMessage: '<?php echo $this->translator(true)->_('user._share.openIdUrlHelp'); ?>', missingMessage: '<?php echo $this->translator(true)->_('user._share.openIdUrlRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('user._share.openIdUrlValidator'); ?>'" />
+			<button id="coreOpenIdListAddButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'submit'">
+				<?php echo $this->translator()->_('global._share.addAction'); ?>
+			</button>
+		</div>
+		<!-- /AddOpenIdUrlForm -->
+	</div>
+</div>
+
+<script type="text/javascript">
+document.title = "<?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('openid.list.title'); ?>";
+
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/TextBox",
+	"dijit/form/ValidationTextBox",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane"
+]);
+</script>

@@ -1,0 +1,42 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		file
+ * @subpackage	hooks
+ * @since		1.0
+ * @version		2012-09-26
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<div data-dojo-type="dijit/MenuItem">
+	<span><img src="<?php echo $this->APP_STATIC_URL . '/modules/file/hooks/attachmentprovider/attachmentprovider16.png'; ?>" style="vertical-align: middle" /> <?php echo $this->translator()->_('menu.label'); ?></span>
+	<script type="dojo/on" data-dojo-event="click">
+	require(["dojo/topic"], function(dojoTopic) {
+		dojoTopic.publish("/app/global/onSelectToolbox", "fileHooksAttachmentProviderContainer");
+	});
+	</script>
+	<script type="dojo/on">
+	var that = this;
+	require(["dojo/topic"], function(dojoTopic) {
+		dojoTopic.subscribe("/app/core/hook/uninstall/file_linkprovider", that, function(data) {
+			dojo.publish("/app/global/onRemoveToolbox", "fileHooksAttachmentProviderContainer");
+			that.destroyRecursive();
+		});
+	});
+	</script>
+</div>
+
+<script type="text/javascript">
+require([
+	"dojo/parser",
+	"dijit/MenuItem"
+]);
+</script>

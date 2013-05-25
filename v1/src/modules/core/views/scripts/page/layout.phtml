@@ -1,0 +1,121 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		core
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-09-14
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php
+$this->headTitle()->set(sprintf($this->translator()->_('page.layout.title'), $this->page->name));
+?>
+
+<script type="text/javascript">
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");
+	// Don't forget to add two following CSS files when working with Grid and Portlet
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojox/layout/resources/GridContainer.css");
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojox/widget/Portlet/Portlet.css");
+});
+</script>
+
+<div id="corePageLayoutContainer" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design: 'headline', gutters: true, region: 'center', style: 'height: 100%'">
+	<!-- Toolbar -->
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'top', splitter: false, style: 'height: 40px'">
+		<div id="corePageLayoutToolbar"></div>
+	</div>
+	<!-- /Toolbar -->
+	
+	<!-- LayoutEditor -->
+	<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="region: 'center', gutters: true, style: 'height: 100%; width: 100%'">
+		<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'left', splitter: true, style: 'width: 15%'">
+			<div id="corePageLayoutTreeView"></div>
+		</div>
+		
+		<div id="corePageLayoutEditor" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="region: 'center', class: 'app-container-border'">
+		</div>
+	</div>
+	<!-- /LayoutEditor -->
+</div>
+
+<script type="text/javascript">
+require([
+	"dojo/aspect",
+	"dojo/json",
+	"dojo/ready",
+	"dojo/request/xhr",
+	"dojo/topic",
+	"dojo/parser",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"core/js/base/controllers/ActionProvider",
+	"core/js/controllers/LayoutController",
+	"core/js/base/views/Helper",
+	"core/js/views/LayoutToolbar",
+	"core/js/views/LayoutTreeView"
+], function(dojoAspect, dojoJson, dojoReady, dojoRequestXhr, dojoTopic) {
+	dojoReady(function() {
+		// Provide the actions
+		<?php foreach (array(
+						'core_extension_render', 'core_page_filter', 'core_page_property',
+					) as $name) : ?>
+		core.js.base.controllers.ActionProvider.set("<?php echo $name; ?>", {
+			url: "<?php echo $this->url(array(), $name); ?>",
+			isAllowed: <?php if ($this->accessor()->route($name)) : ?>true<?php else : ?>false<?php endif; ?>
+		});
+		<?php endforeach; ?>
+
+		var layoutController = new core.js.controllers.LayoutController("corePageLayoutEditor");
+		var layoutToolbar    = new core.js.views.LayoutToolbar("corePageLayoutToolbar");
+
+		// The output of widget will not be shown
+		layoutController.getLayoutContainer().setShowPortletOutput(false);
+		
+		layoutController.setLayoutToolbar(layoutToolbar)
+						.setLayoutTreeView(new core.js.views.LayoutTreeView("corePageLayoutTreeView", layoutController.getLayoutContainer()))
+						.setLayoutData(<?php echo $this->page->layout; ?>)
+						.switchToMode("edit");
+
+		// Save layout handler
+		var helper = new core.js.base.views.Helper("corePageLayoutContainer");
+		dojoAspect.after(layoutController, "onSaveLayout", function(layoutData) {
+			helper.setModule("core").showStandby();
+			dojoRequestXhr("<?php echo $this->url(array(), 'core_page_layout'); ?>", {
+				data: {
+					page_id: "<?php echo $this->page->page_id; ?>",
+					layout: dojoJson.stringify(layoutData),
+					format: "json"
+				},
+				handleAs: "json",
+				method: "POST"
+			}).then(function(data) {
+				helper.hideStandby();
+				dojoTopic.publish("/app/core/page/layout/onComplete", data);
+			});
+		}, true);
+
+		// Cancel handler
+		layoutToolbar.onCancel = function() {
+			dojoTopic.publish("/app/core/page/layout/onCancel", "<?php echo $this->page->page_id; ?>");
+		};
+
+		// Recreate the layout container after user copy and paste the layout data
+		dojoTopic.subscribe("/app/core/page/layout/onPasteSuccess", function(data) {
+			if (data.page_id == "<?php echo $this->page->page_id; ?>") {
+				layoutController.setLayoutData(data.layout)
+								.switchToMode("edit");
+			}
+		});
+	});
+});
+</script>

@@ -1,0 +1,307 @@
+/**
+ * NextCMS
+ *
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		media
+ * @subpackage	css
+ * @since		1.0
+ * @version		2012-08-30
+ */
+
+/* ========== ICONS ========================================================= */
+.module-media-icon-crop {
+	background-image: url(images/crop.png);
+}
+.module-media-icon-edit {
+	background-image: url(images/edit.png);
+}
+.module-media-icon-flip-horizontal {
+	background-image: url(images/flip-horizontal.png);
+}
+.module-media-icon-flip-vertical {
+	background-image: url(images/flip-vertical.png);
+}
+.module-media-icon-grid {
+	background-image: url(images/grid.png);
+}
+.module-media-icon-import {
+	background-image: url(images/import.png);
+}
+.module-media-icon-list {
+	background-image: url(images/list.png);
+}
+.module-media-icon-resize {
+	background-image: url(images/resize.png);
+}
+.module-media-icon-rotate-left {
+	background-image: url(images/rotate-left.png);
+}
+.module-media-icon-rotate-right {
+	background-image: url(images/rotate-right.png);
+}
+.module-media-icon-slideshow {
+	background-image: url(images/slideshow.png);
+}
+
+/* ========== MANAGE ALBUMS ================================================= */
+.module-media-albums,
+.module-media-albums ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* Item */
+.module-media-album-cover-container img { 
+	width: 60px;
+	height: 60px;
+}
+.module-media-albums .module-media-album-title {
+	padding: 3px;
+	text-decoration: none;
+}
+.module-media-album-active .module-media-album-title {
+	background: #769DC0; /*#769DC0*/
+	color: #fff;
+}
+.module-media-album-title:hover {
+	background-color: #abd6ff;
+	color: #fff;
+}
+
+/* Grid view */
+.module-media-album-grid {
+	display: inline-block;
+	list-style-type: none;
+	margin-bottom: 10px;
+	margin-right: 5px;
+	vertical-align: top;
+	width: 80px;
+}
+.module-media-album-grid a {
+	float: none;
+}
+.module-media-album-grid span:last-child {
+	float: none;
+	text-align: center;
+}
+.module-media-album-grid .module-media-album-cover-container {
+	display: block;
+}
+.module-media-album-grid .dijitInline {
+	width: 60px;
+}
+
+/* List view */
+.module-media-album-list {
+	clear: both;
+	display: block;
+	padding-bottom: 3px;
+	padding-top: 3px;
+}
+.module-media-album-list .module-media-album-cover-container {
+	display: none;
+}
+.module-media-album-list a {
+	float: left;
+}
+.module-media-album-list span:last-child {
+	float: right;
+	text-align: right;
+}
+.module-media-album-list .dijitInline {
+	float: left;
+}
+
+/* ========== MANAGE PHOTOS ================================================= */
+/* Item */
+.module-media-photos .module-media-photo {
+	display: inline-block;
+	margin-bottom: 25px;
+	margin-right: 15px;
+	vertical-align: top;
+}
+
+/* Dnd */
+.module-media-photos .dojoDndItem {
+	padding: 5px;
+}
+.module-media-photos .dojoDndItemOver {
+	background: #EDEDED;
+	cursor: pointer;
+}
+.module-media-photos .dojoDndItemSelected {
+	background: #CFE5FA;
+}
+.module-media-photos .dojoDndItemAnchor {
+	background: #CFE5FA;
+}
+
+/* Editor */
+.module-media-photo-cropped-label {
+	color: #333;
+}
+
+/* Uploading progress text */
+.module-media-photo-standby {
+	color: #769DC0;
+	font-size: 30px;
+}
+
+/* ========== MANAGE PLAYLISTS ============================================== */
+.module-media-playlists,
+.module-media-playlists ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* Item */
+.module-media-playlist-poster-container img {
+	width: 60px;
+	height: 60px;
+}
+.module-media-playlists .module-media-playlist-title {
+	padding: 3px;
+	text-decoration: none;
+}
+.module-media-playlist-active .module-media-playlist-title {
+	background: #769DC0;
+	color: #fff;
+}
+.module-media-playlist-title:hover {
+	background-color: #abd6ff;
+	color: #fff;
+}
+
+/* Grid view */
+.module-media-playlist-grid {
+	display: inline-block;
+	list-style-type: none;
+	margin-bottom: 10px;
+	margin-right: 5px;
+	vertical-align: top;
+	width: 80px;
+}
+.module-media-playlist-grid a {
+	float: none;
+}
+.module-media-playlist-grid span:last-child {
+	float: none;
+	text-align: center;
+}
+.module-media-playlist-grid .module-media-playlist-poster-container {
+	display: block;
+}
+.module-media-playlist-grid .dijitInline {
+	width: 60px;
+}
+
+/* List view */
+.module-media-playlist-list {
+	clear: both;
+	display: block;
+	padding-bottom: 3px;
+	padding-top: 3px;
+}
+.module-media-playlist-list .module-media-playlist-poster-container {
+	display: none;
+}
+.module-media-playlist-list a {
+	float: left;
+}
+.module-media-playlist-list span:last-child {
+	float: right;
+	text-align: right;
+}
+.module-media-playlist-list .dijitInline {
+	float: left;
+}
+
+/* Dnd */
+.module-media-playlists .dojoDndContainerOver .module-media-playlist-title {
+	background: #CFE5FA;
+}
+
+/* ========== MANAGE VIDEOS ================================================= */
+.module-media-videos {}
+
+/* Item */
+.module-media-videos .module-media-video {
+	display: inline-block;
+	margin-bottom: 25px;
+	margin-right: 15px;
+	vertical-align: top;
+}
+.module-media-video-play {
+	background: url(images/play.png) center center no-repeat;
+	position: absolute;
+		top: 0;
+		left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+}
+.module-media-video-poster {
+	position: relative;
+}
+.module-media-video-poster img {
+	z-index: 0;
+}
+
+/* Dnd */
+.module-media-videos .dojoDndItem {
+	padding: 5px;
+}
+.module-media-videos .dojoDndItemOver {
+	background: #EDEDED;
+	cursor: pointer;
+}
+.module-media-videos .dojoDndItemSelected {
+	background: #CFE5FA;
+}
+.module-media-videos .dojoDndItemAnchor {
+	background: #CFE5FA;
+}
+
+/* ========== IMPORT FROM FLICKR ============================================ */
+
+.module-media-flickr-sets {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+.module-media-flickr-set {
+	border-bottom: 1px solid #B5BCC7;
+	clear: both;
+	padding: 5px;
+}
+.module-media-flickr-set img {
+	border: 1px solid #B5BCC7;
+	cursor: pointer;
+	float: left;
+	margin-right: 10px;
+	width: 75px;
+	height: 75px;
+}
+.module-media-flickr-set-active {
+	background-color: #CFE5FA;
+}
+.module-media-flickr-photo {
+	display: inline-block;
+	margin: 5px;
+	padding: 5px;
+	position: relative;
+}
+.module-media-flickr-icon-remove {
+	cursor: pointer;
+	position: absolute;
+		top: 0;
+		left: 0;
+	width: 16px;
+	height: 16px;
+}

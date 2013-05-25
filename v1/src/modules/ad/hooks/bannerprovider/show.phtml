@@ -1,0 +1,97 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		ad
+ * @subpackage	hooks
+ * @since		1.0
+ * @version		2012-08-31
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<div id="adHooksBannerProviderContainer" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="gutters: false, iconClass: 'app-icon hook-ad-bannerprovider-icon', title: '<?php echo $this->translator(true)->_('show.banners'); ?>'">
+	<!-- Toolbar -->
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'top', splitter: false">
+		<div data-dojo-type="dijit/Toolbar">
+			<input id="adHooksBannerProviderSearchTextBox" data-dojo-type="dijit/form/TextBox" data-dojo-props="type: 'text', placeHolder: '<?php echo $this->translator(true)->_('show.keywordHelp'); ?>', style: 'width: 150px'" />
+			<button id="adHooksBannerProviderSearchButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button', showLabel: false, iconClass: 'app-icon app-icon-search', label: '<?php echo $this->translator(true)->_('show.searchAction'); ?>'">
+				<script type="dojo/on" data-dojo-event="click">
+				require(["dijit/registry"], function(dijitRegistry) {
+					var keyword = dijitRegistry.byId("adHooksBannerProviderSearchTextBox").get("value");
+					ad.hooks.bannerprovider.BannerController.searchBanners({
+						keyword: keyword
+					});
+				});
+				</script>
+			</button>
+		</div>
+	</div>
+	<!-- /Toolbar -->
+	
+	<!-- BannersPane -->
+	<div id="adHooksBannerProviderBannersContainer" data-dojo-type="dojox/layout/ContentPane" data-dojo-props="region: 'center', loadingMessage: '<div class=app-center><div><span class=dijitContentPaneLoading><?php echo $this->translator(true)->_('global._share.loadingAction'); ?></span></div></div>', style: 'height: 100%; width: 100%'">
+		<div class="app-center">
+			<div><?php echo $this->translator()->_('show.searchHelp'); ?></div>
+		</div>
+	</div>
+	<!-- /BannersPane -->
+</div>
+
+<?php $this->script()->captureStart(); ?>
+/* ad.hooks.bannerprovider */
+require([
+	"dojo/_base/declare",
+	"dojo/_base/lang",
+	"dojo/io-query",
+	"dojo/topic",
+	"dijit/registry",
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/TextBox",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dijit/Toolbar",
+	"dojox/layout/ContentPane",
+	"core/js/base/Encoder"
+], function(dojoDeclare, dojoLang, dojoIoQuery, dojoTopic, dijitRegistry) {
+	dojoDeclare("ad.hooks.bannerprovider.BannerController", null, {});
+	
+	ad.hooks.bannerprovider.BannerController._criteria = {
+		keyword: null,
+		page: 1,
+		per_page: 20
+	};
+	
+	ad.hooks.bannerprovider.BannerController.searchBanners = function(/*Object*/ criteria) {
+		// summary:
+		//		Searches for banners
+		dojoLang.mixin(ad.hooks.bannerprovider.BannerController._criteria, criteria);
+		var q = core.js.base.Encoder.encode(ad.hooks.bannerprovider.BannerController._criteria);
+	
+		var params = {
+			_type: "hook",
+			_mod: "ad",
+			_name: "bannerprovider",
+			_method: "search",
+			q: q
+		};
+		dijitRegistry.byId("adHooksBannerProviderBannersContainer")
+					 .set("href", "<?php echo $this->url(array(), 'core_extension_render'); ?>" + "?" + dojoIoQuery.objectToQuery(params));
+	};
+	
+	dojoTopic.subscribe("/app/ad/hooks/bannerprovider/search/onGotoPage", function(/*Integer*/ page) {
+		// summary:
+		//		Paging handler
+		ad.hooks.bannerprovider.BannerController.searchBanners({
+			page: page
+		});
+	});
+});
+<?php $this->script()->captureEnd(); ?>

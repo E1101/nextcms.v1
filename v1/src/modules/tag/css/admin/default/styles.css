@@ -1,0 +1,45 @@
+/**
+ * NextCMS
+ *
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		tag
+ * @subpackage	css
+ * @since		1.0
+ * @version		2012-08-24
+ */
+ 
+.module-tag-item {
+	background: #CFE5FA;
+	display: inline-block;
+	margin-bottom: 15px;
+	margin-right: 15px;
+	padding: 5px;
+}
+.module-tag-item:hover {
+	background: #E2EBF2;
+	color: #FFF;
+}
+
+/* ========== tag.js.views.TagCollectionView ================================ */
+.module-tag-collection-items {
+	border: 1px solid #B5BCC7;
+	overflow: auto;
+}
+.module-tag-collection-item {
+	background: #CFE5FA;
+	display: inline-block;
+	margin-bottom: 15px;
+	margin-right: 15px;
+	padding: 5px;
+}
+.module-tag-collection-item:hover {
+	background: #E2EBF2;
+	color: #FFF;
+}
+.module-tag-collection-item-existing {
+	background: #73C74A;
+}

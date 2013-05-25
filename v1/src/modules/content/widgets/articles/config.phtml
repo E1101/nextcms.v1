@@ -1,0 +1,416 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		content
+ * @subpackage	widgets
+ * @since		1.0
+ * @version		2012-10-02
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<script type="text/javascript">
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/content/widgets/articles/admin.css");
+});
+</script>
+
+<div class="app-form">
+	<div class="app-form-row" style="width: 100%">
+		<div data-dojo-type="dijit/layout/TabContainer" data-dojo-props="nested: true, style: 'height: 100%; width: 100%', closable: true, doLayout: false">
+			<!-- Basic -->
+			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="selected: true, title: '<?php echo $this->translator(true)->_('config.basic'); ?>', style: 'padding-top: 8px'">
+				<div class="app-form-row-vertical">
+					<label for="limit"><?php echo $this->translator()->_('config.numberOfArticles'); ?>:</label>
+					<input data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="name: 'limit', class: 'appWidgetInput', style: 'width: 100px'" />
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<label for="type"><?php echo $this->translator()->_('config.type'); ?>:</label>
+					<select data-dojo-type="dijit/form/Select" data-dojo-props="name: 'type', value: '<?php echo $this->type; ?>', class: 'appWidgetInput'">
+						<option value="<?php echo Content_Models_Article::TYPE_ARTICLE; ?>"><?php echo $this->translator()->_('config.typeArticle'); ?></option>
+						<option value="<?php echo Content_Models_Article::TYPE_PAGE; ?>"><?php echo $this->translator()->_('config.typePage'); ?></option>
+						<option value="<?php echo Content_Models_Article::TYPE_BLOG; ?>"><?php echo $this->translator()->_('config.typeBlog'); ?></option>
+					</select>					
+				</div>
+	
+				<div class="app-form-row-vertical">
+					<label for="lang"><?php echo $this->translator()->_('config.language'); ?>:</label>
+					<select data-dojo-type="dijit/form/Select" data-dojo-props="name: 'language', value: '<?php echo $this->language; ?>', class: 'appWidgetInput'">
+						<?php if ($this->languages) : ?>
+						<?php foreach ($this->languages as $language => $name) : ?>
+						<option value="<?php echo $language; ?>"><?php echo $name; ?></option>
+						<?php endforeach; ?>
+						<?php endif; ?>
+						
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						// Update the category select box
+						require([
+							"dojo/_base/array",
+							"dojo/request/xhr",
+							"dijit/registry"
+						], function(dojoArray, dojoRequestXhr, dijitRegistry) {
+							dojoRequestXhr("<?php echo $this->url(array(), 'core_extension_render'); ?>", {
+								data: {
+									_type: "widget",
+									_mod: "content",
+									_name: "articles",
+									_method: "category",
+									noRenderScript: true,
+									language: value
+								},
+								handleAs: "json",
+								method: "POST"
+							}).then(function(data) {
+								var categorySelect = dijitRegistry.byId("contentWidgetsArticlesConfigCategorySelect_<?php echo $this->uid; ?>");
+								categorySelect.removeOption(categorySelect.getOptions());
+								categorySelect.addOption([{
+									value: "",
+									label: "<?php echo $this->translator()->_('config.selectCategory'); ?>"
+								}, {
+									// DOJO LESSON: Add a separator to a dijit.form.Select widget
+									value: "",
+									label: "",
+									selected: false,
+									disabled: false
+								}, {
+									value: "__AUTO__",
+									label: "<?php echo $this->translator()->_('config.categoryDeterminedAutomatically'); ?>"
+								}]);
+								if (data.categories.length > 0) {
+									categorySelect.addOption({
+										value: "",
+										label: "",
+										selected: false,
+										disabled: false
+									});
+								}
+								dojoArray.forEach(data.categories, function(item) {
+									categorySelect.addOption({
+										value: item.category_id + "",
+										label: item.label
+									});
+								});
+
+								// Update the folder select box
+								var folderSelect = dijitRegistry.byId("contentWidgetsArticlesConfigFolderSelect_<?php echo $this->uid; ?>");
+								folderSelect.removeOption(folderSelect.getOptions());
+								folderSelect.addOption([{
+									value: "",
+									label: "<?php echo $this->translator()->_('config.selectFolder'); ?>"
+								}]);
+								if (data.folders.length > 0) {
+									folderSelect.addOption({
+										value: "",
+										label: "",
+										selected: false,
+										disabled: false
+									});
+								}
+								dojoArray.forEach(data.folders, function(item) {
+									folderSelect.addOption({
+										value: item.folder_id + "",
+										label: item.name
+									});
+								});
+							});
+						});
+						</script>
+					</select>
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<label for="category_id"><?php echo $this->translator()->_('config.category'); ?>:</label>
+					<select id="contentWidgetsArticlesConfigCategorySelect_<?php echo $this->uid; ?>" data-dojo-type="dijit/form/Select" data-dojo-props="name: 'category_id', class: 'appWidgetInput', maxHeight: 200">
+						<option value=""><?php echo $this->translator()->_('config.selectCategory'); ?></option>
+						<option type="separator"></option>
+						<option value="__AUTO__"><?php echo $this->translator()->_('config.categoryDeterminedAutomatically'); ?></option>
+						<?php if ($this->categories) : ?>
+						<option type="separator"></option>
+						<?php foreach ($this->categories as $category) : ?>
+						<option value="<?php echo $category->category_id; ?>"><?php echo str_repeat('---', $category->depth) . $category->name; ?></option>
+						<?php endforeach; ?>
+						<?php endif; ?>
+					</select>
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<label for="keyword"><?php echo $this->translator()->_('config.keyword'); ?>:</label>
+					<input data-dojo-type="dijit/form/TextBox" data-dojo-props="name: 'keyword', class: 'appWidgetInput'" />
+				</div>
+				
+				<div class="app-form-row">
+					<input data-dojo-type="dijit/form/CheckBox" data-dojo-props="name: 'featured', value: 1, class: 'appWidgetInput'" /> <?php echo $this->translator()->_('config.featuredArticles'); ?>
+				</div>
+				
+				<div class="app-form-row">
+					<input data-dojo-type="dijit/form/CheckBox" data-dojo-props="name: 'image_icon', value: 1, class: 'appWidgetInput'" /> <?php echo $this->translator()->_('config.photoArticles'); ?>
+				</div>
+				
+				<div class="app-form-row">
+					<input data-dojo-type="dijit/form/CheckBox" data-dojo-props="name: 'video_icon', value: 1, class: 'appWidgetInput'" /> <?php echo $this->translator()->_('config.videoArticles'); ?>
+				</div>
+			</div>
+			<!-- /Basic -->
+		
+			<!-- DataSource -->
+			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title: '<?php echo $this->translator(true)->_('config.dataSource'); ?>', style: 'padding-top: 8px'">
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'latest', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("contentWidgetsArticlesConfigSetContainer_<?php echo $this->uid; ?>", "display", "none");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.latestArticles'); ?>
+				</div>
+				
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'most_viewed', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("contentWidgetsArticlesConfigSetContainer_<?php echo $this->uid; ?>", "display", "none");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.mostViewedArticles'); ?>
+				</div>
+				
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'most_commented', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("contentWidgetsArticlesConfigSetContainer_<?php echo $this->uid; ?>", "display", "none");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.mostCommentedArticles'); ?>
+				</div>
+				
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'folder', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("contentWidgetsArticlesConfigSetContainer_<?php echo $this->uid; ?>", "display", "none");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.folder'); ?>
+					<select id="contentWidgetsArticlesConfigFolderSelect_<?php echo $this->uid; ?>" data-dojo-type="dijit/form/Select" data-dojo-props="name: 'folder_id', class: 'appWidgetInput', maxHeight: 200">
+						<option value=""><?php echo $this->translator()->_('config.selectFolder'); ?></option>
+						<option type="separator"></option>
+						<?php if ($this->folders) : ?>
+						<?php foreach ($this->folders as $folder) : ?>
+						<option value="<?php echo $folder->folder_id; ?>"><?php echo $folder->name; ?></option>
+						<?php endforeach; ?>
+						<?php endif; ?>
+					</select>
+				</div>
+				
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'set', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("contentWidgetsArticlesConfigSetContainer_<?php echo $this->uid; ?>", "display", "block");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.setOfArticles'); ?>
+				</div>
+				
+				<div class="app-form-row" id="contentWidgetsArticlesConfigSetContainer_<?php echo $this->uid; ?>" style="display: none; margin: 0 5px">
+					<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="style: 'height: 200px; padding: 0; width: 100%', class: 'app-container-border'">
+						<div id="contentWidgetsArticlesConfigArticlesContainer_<?php echo $this->uid; ?>" class="contentWidgetsArticlesConfigArticleItemsContainer" style="height: 100%">
+							<div id="contentWidgetsArticlesConfigSetHelp_<?php echo $this->uid; ?>" style="display: <?php if (count($this->articles) == 0) : ?>block<?php else : ?>none<?php endif; ?>; padding-top: 100px; text-align: center">
+								<?php echo $this->translator()->_('config.dragDropHelp'); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- /DataSource -->
+			
+			<!-- Theme -->
+			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title: '<?php echo $this->translator(true)->_('config.theme'); ?>', style: 'padding-top: 8px'">
+				<div class="app-form-row">
+					<input data-dojo-type="dijit/form/TextBox" data-dojo-props="name: 'theme', class: 'appWidgetInput'" />
+				</div>
+			</div>
+			<!-- /Theme -->
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+require([
+	"dojo/_base/array",
+	"dojo/_base/declare",
+	"dojo/dom-attr",
+	"dojo/dom-construct",
+	"dojo/dom-style",
+	"dojo/on",
+	"dojo/ready",
+	"dojo/window",
+	"dojo/dnd/AutoSource",
+	"dojo/parser",
+	"dojo/query",
+	"dijit/form/CheckBox",
+	"dijit/form/Select",
+	"dijit/form/TextBox",
+	"dijit/form/ValidationTextBox",
+	"dijit/layout/ContentPane",
+	"dijit/layout/TabContainer",
+	"dojox/fx",
+	"core/js/base/Encoder",
+	"core/js/Constant"
+], function(dojoArray, dojoDeclare, dojoDomAttr, dojoDomConstruct, dojoDomStyle, dojoOn, dojoReady, dojoWindow) {
+	dojoDeclare("content.widgets.articles.ConfigController", null, {});
+
+	// Array of article's Ids in the set
+	content.widgets.articles.ConfigController._articleIds = [];
+
+	content.widgets.articles.ConfigController.addArticle = function(/*Object*/ article, /*String*/ uid) {
+		// summary:
+		//		Adds an article to the set
+		// article:
+		//		The article data, contains the following properties:
+		//		- title
+		//		- article_id
+		//		- image_square
+		// uid:
+		//		The unique Id which can be used to define the set container
+		if (dojoArray.indexOf(content.widgets.articles.ConfigController._articleIds, article.article_id) != -1) {
+			return;
+		}
+		content.widgets.articles.ConfigController._articleIds.push(article.article_id);
+		
+		var div = dojoDomConstruct.create("div", {
+			className: "dojoDndItem contentWidgetsArticlesConfigArticleItem",
+			dndtype: "contentWidgetsArticlesConfigArticleItemDnd"
+		}, "contentWidgetsArticlesConfigArticlesContainer_" + uid);
+
+		// Article thumbnail
+		dojoDomConstruct.create("img", {
+			src: core.js.Constant.normalizeUrl(article.image_square),
+			className: "app-left"
+		}, div);
+
+		// Title
+		dojoDomConstruct.create("div", {
+			innerHTML: article.title,
+			style: "padding-bottom: 4px"
+		}, div);
+
+		// Actions container
+		var span = dojoDomConstruct.create("span", {
+			className: "contentWidgetsArticlesConfigAction"
+		}, div);
+
+		// Removing action
+		var removingLink = dojoDomConstruct.create("a", {
+			href: "javascript: void(0);",
+			innerHTML: "<?php echo $this->translator()->_('config.removeAction'); ?>"
+		}, span);
+		dojoOn(removingLink, "click", function() {
+			dojoDomConstruct.destroy(div);
+			var index = dojoArray.indexOf(content.widgets.articles.ConfigController._articleIds, article.article_id);
+			content.widgets.articles.ConfigController._articleIds.splice(index, 1);
+			
+			// Show the guide if there is no articles
+			if (dojo.query(".contentWidgetsArticlesConfigArticleItem", "contentWidgetsArticlesConfigArticlesContainer_" + uid).length == 0) {
+				dojoDomStyle.set("contentWidgetsArticlesConfigSetHelp_" + uid, "display", "block");
+			}
+		});
+
+		// Moving up action
+		var movingUpLink = dojoDomConstruct.create("a", {
+			href: "javascript: void(0);",
+			innerHTML: "<?php echo $this->translator()->_('config.moveUpAction'); ?>"
+		}, span);
+		dojoOn(movingUpLink, "click", function() {
+			var items = dojo.query(".contentWidgetsArticlesConfigArticleItem", "contentWidgetsArticlesConfigArticlesContainer_" + uid);
+			var index = dojoArray.indexOf(items, div);
+			if (index > 0 && items.length > 1) {
+				dojoDomConstruct.place(div, items[index - 1], "before");
+				dojoWindow.scrollIntoView(div);
+				dojox.fx.highlight({
+					node: div,
+					duration: 2000
+				}).play();
+			}
+		});
+		
+		// Moving down action
+		var movingDownLink = dojoDomConstruct.create("a", {
+			href: "javascript: void(0);",
+			innerHTML: "<?php echo $this->translator()->_('config.moveDownAction'); ?>"
+		}, span);
+		dojoOn(movingDownLink, "click", function() {
+			var items = dojo.query(".contentWidgetsArticlesConfigArticleItem", "contentWidgetsArticlesConfigArticlesContainer_" + uid);
+			var index = dojoArray.indexOf(items, div);
+			if (index < items.length - 1 && items.length > 1) {
+				dojoDomConstruct.place(div, items[index + 1], "after");
+				dojoWindow.scrollIntoView(div);
+				dojox.fx.highlight({
+					node: div,
+					duration: 2000
+				}).play();
+			}
+		});
+
+		// Hidden input
+		dojoDomConstruct.create("input", {
+			type: "hidden",
+			appWidgetInputName: "article_ids[]",
+			name: "article_ids[]",
+			value: article.article_id,
+			className: "appWidgetInput"
+		}, div);
+		
+		dojoDomConstruct.create("div", {
+			className: "app-clear"
+		}, div);
+	};
+
+	dojoReady(function() {
+		// Load the articles in set
+		<?php foreach ($this->articles as $article) : ?>
+		content.widgets.articles.ConfigController.addArticle(<?php echo Zend_Json::encode($article); ?>, "<?php echo $this->uid; ?>");
+		<?php endforeach; ?>
+		
+		new dojo.dnd.AutoSource("contentWidgetsArticlesConfigArticlesContainer_<?php echo $this->uid; ?>", {
+			accept: ["appDndLink", "contentWidgetsArticlesConfigArticleItemDnd"],
+			onDropExternal: function(source, nodes, copy) {
+				var node = nodes[0];
+				if (dojoDomAttr.get(node, "data-app-entity-class") != "Content_Models_Article") {
+					return;
+				}
+
+				// Hide the guides
+				dojoDomStyle.set("contentWidgetsArticlesConfigSetHelp_<?php echo $this->uid; ?>", "display", "none");
+				
+				var article = core.js.base.Encoder.decode(dojoDomAttr.get(node, "data-app-entity-props"));
+				content.widgets.articles.ConfigController.addArticle(article, "<?php echo $this->uid; ?>");
+			}
+		});
+	});
+});
+</script>

@@ -1,0 +1,268 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		core
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-09-13
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php
+$this->headTitle()->set($this->translator()->_('page.add.title'));
+?>
+
+<div id="corePageAddContainer" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design: 'sidebar', gutters: false, style: 'height: 100%; width: 100%'">
+	<!-- Toolbar -->
+	<div data-dojo-type="dijit/Toolbar" data-dojo-props="region: 'top', splitter: false">
+		<button id="corePageAddSaveButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+			<span class="app-icon app-icon-save"></span><br />
+			<?php echo $this->translator()->_('global._share.saveAction'); ?>
+			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+			require([
+				"dojo/dom-form",
+				"dojo/request/xhr",
+				"dojo/topic",
+				"dijit/registry"
+			], function(dojoDomForm, dojoRequestXhr, dojoTopic, dijitRegistry) {
+				if (dijitRegistry.byId("corePageAddForm").validate()) {
+					dijitRegistry.byId("corePageAddStandby").show();
+					dojoRequestXhr("<?php echo $this->url(array(), 'core_page_add'); ?>", {
+						data: dojoDomForm.toObject("corePageAddForm"),
+						handleAs: "json",
+						method: "POST"
+					}).then(function(data) {
+						dijitRegistry.byId("corePageAddStandby").hide();
+						dojoTopic.publish("/app/core/page/add/onComplete", data);
+					});
+				}
+			});
+			</script>
+		</button>
+		
+		<button id="corePageAddCancelButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+			<span class="app-icon app-icon-cancel"></span><br />
+			<?php echo $this->translator()->_('global._share.cancelAction'); ?>
+			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+			require(["dojo/topic"], function(dojoTopic) {
+				dojoTopic.publish("/app/core/page/add/onCancel");
+			});
+			</script>
+		</button>
+	</div>
+	<!-- /Toolbar -->
+	
+	<!-- AddPageForm -->
+	<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="region: 'center', gutters: false">
+		<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'top', style: 'padding: 8px 8px 0 8px'">
+			<h2 class="app-heading" style="margin: 0"><span><?php echo $this->translator()->_('page.add.title'); ?></span></h2>
+		</div>
+		
+		<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'center', class: 'app-content-pane'">
+			<div id="corePageAddForm" data-dojo-type="dijit/form/Form" data-dojo-props="action: '', method: 'POST', class: 'app-form'">
+				<div data-dojo-type="dijit/layout/TabContainer" data-dojo-props="nested: true, style: 'height: 100%'">
+					<!-- Properties -->
+					<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title: '<?php echo $this->translator(true)->_('page._share.properties'); ?>', class: 'app-content-pane'">
+						<div class="app-form-row">
+							<label for="language"><?php echo $this->translator()->_('page._share.language'); ?>:</label>
+							<select id="corePageAddLanguageSelect" data-dojo-type="dijit/form/Select" data-dojo-props="name: 'language'">
+							<?php foreach ($this->languages as $language => $name) : ?>
+								<option value="<?php echo $language; ?>"<?php if ($language == $this->language) : ?> selected="selected"<?php else : ?> disabled="disabled"<?php endif; ?>><?php echo $name; ?></option>
+							<?php endforeach; ?>
+							</select>
+						</div>
+						
+						<div class="app-form-row">
+							<label for="template"><?php echo $this->translator()->_('page._share.template'); ?>:</label>
+							<select id="corePageAddTemplateSelect" data-dojo-type="dijit/form/Select" data-dojo-props="name: 'template'">
+							<?php foreach ($this->templates as $template) : ?>
+								<?php if ($template != 'admin') : ?>
+								<option value="<?php echo $template; ?>"<?php if ($template == $this->template) : ?> selected="selected"<?php else : ?> disabled="disabled"<?php endif; ?>><?php echo $template; ?></option>
+								<?php endif; ?>
+							<?php endforeach; ?>
+							</select>
+						</div>
+					
+						<div class="app-form-row">
+							<label for="name"><?php echo $this->translator()->_('page._share.name'); ?>:</label>
+							<input id="corePageAddNameTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="name: 'name', style: 'width: 200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('page._share.nameRequired'); ?>'" />
+						</div>
+						
+						<div class="app-form-row">
+							<label for="title"><?php echo $this->translator()->_('page._share.title'); ?>:</label>
+							<input id="corePageAddTitleTextBox" data-dojo-type="dijit/form/TextBox" data-dojo-props="name: 'title', style: 'width: 200px'" />
+						</div>
+						
+						<div class="app-form-row">
+							<label for="route"><?php echo $this->translator()->_('page._share.route'); ?>:</label>
+							<select id="corePageAddRouteSelect" data-dojo-type="dijit/form/Select" data-dojo-props="name: 'route', maxHeight: 200">
+								<option value=""><?php echo $this->translator()->_('page._share.selectRoute'); ?></option>
+								<?php if ($this->routes) : ?>
+								
+								<?php foreach ($this->routes as $module => $routes) : ?>
+								<option type="separator"></option>
+								<?php foreach ($routes as $name => $description) : ?>
+								<option value="<?php echo $name; ?>"><?php echo $description; ?></option>
+								<?php endforeach; ?>
+								<?php endforeach; ?>
+								
+								<?php endif; ?>
+								
+								<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+								require(["dijit/registry"], function(dijitRegistry) {
+									if (value) {
+										var option = dijitRegistry.byId("corePageAddRouteSelect").getOptions(value);
+										dijitRegistry.byId("corePageAddNameTextBox").set("value", option.label);
+									}
+								});
+							</script>
+							</select>
+						</div>
+						
+						<div class="app-form-row">
+							<label for="url"><?php echo $this->translator()->_('page._share.url'); ?>:</label>
+							<input id="corePageAddUrlTextBox" data-dojo-type="dijit/form/TextBox" data-dojo-props="name: 'url', value: '<?php if ($this->source) : ?><?php echo $this->source->url; ?><?php endif; ?>', style: 'width: 300px'" />
+						</div>
+						
+						<input type="hidden" name="format" value="json" />
+					</div>
+					<!-- /Properties -->
+					
+					<!-- Localization -->
+					<div id="corePageAddLocalizedContainer" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title: '<?php echo $this->translator(true)->_('page._share.localization'); ?>', class: 'app-container-border', style: 'margin-top: 8px'">
+						<?php if ($this->source) : ?>
+						<div class="corePageAddLocalizedItem" style="padding: 2px 8px">
+							<input id="corePageAddSourceNameTextBox" data-dojo-type="dijit/form/TextBox" data-dojo-props="value: '<?php echo addslashes($this->source->name); ?>', style: 'width: 300px', readOnly: true" />
+							<input id="corePageAddSourceLanguageTextBox" data-dojo-type="dijit/form/TextBox" data-dojo-props="value: '<?php echo addslashes($this->source->language); ?>', style: 'margin: 0 8px; width: 100px', readOnly: true" />
+							<input type="hidden" name="translations" value='<?php echo $this->source->translations; ?>' />
+							
+							<button id="corePageAddLocalizedDeleteButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button', label: '<?php echo $this->translator(true)->_('global._share.deleteAction'); ?>'">
+								<script type="dojo/on" data-dojo-event="click">
+								var that = this;
+								require([
+									"dojo/dom-construct",
+									"dojo/dom-style",
+									"dojo/NodeList-traverse",
+									"dojo/query"
+								], function(dojoDomConstruct, dojoDomStyle) {
+									dojoDomConstruct.destroy(dojo.query(that.domNode).closest(".corePageAddLocalizedItem")[0]);
+									if (dojo.query(".corePageAddLocalizedItem", "corePageAddLocalizedContainer").length == 0) {
+										// Show the guide
+										dojoDomStyle.set("corePageAddLocalizedHelp", "display", "block");
+									}
+								});
+								</script>
+							</button>
+						</div>
+						<?php endif; ?>
+						
+						<div id="corePageAddLocalizedHelp" class="app-center" style="display: <?php if ($this->source) : ?>none<?php else : ?>block<?php endif; ?>">
+							<div><?php echo $this->translator()->_('page._share.localizationHelp'); ?></div>
+						</div>
+					</div>
+					<!-- /Localization -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- /AddPageForm -->
+</div>
+
+<div id="corePageAddStandby" data-dojo-type="dojox/widget/Standby" data-dojo-props="target: 'corePageAddContainer', imageText: '<?php echo $this->translator(true)->_('global._share.savingAction'); ?>'"></div>
+
+<script type="text/javascript">
+require([
+	"dojo/_base/array",
+	"dojo/dom-construct",
+	"dojo/dom-style",
+	"dojo/on",
+	"dojo/ready",
+	"dojo/topic",
+	"dijit/registry",
+	"dojo/parser",
+	"dojo/query",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/Select",
+	"dijit/form/TextBox",
+	"dijit/form/ValidationTextBox",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dijit/Toolbar",
+	"dojox/grid/enhanced/plugins/GridSource",
+	"dojox/widget/Standby"
+], function(dojoArray, dojoDomConstruct, dojoDomStyle, dojoOn, dojoReady, dojoTopic, dijitRegistry) {
+	dojoReady(function() {
+		var target = new dojox.grid.enhanced.plugins.GridSource("corePageAddLocalizedContainer", {
+			isSource: false,
+			insertNodesForGrid: false
+		});
+		dojoOn(target, "dropgridrows", function(grid, rowIndexes) {
+			var sourceItems = [];
+			dojoArray.forEach(rowIndexes, function(rowIndex, index) {
+				var item = grid.getItem(rowIndex);
+				if (item) {
+					sourceItems.push(item);
+				}
+			});
+
+			if (sourceItems.length > 0) {
+				// Hide the guide
+				dojoDomStyle.set("corePageAddLocalizedHelp", "display", "none");
+			}
+
+			dojoArray.forEach(sourceItems, function(item) {
+				var div = dojoDomConstruct.create("div", {
+					className: "corePageAddLocalizedItem",
+					style: "padding: 2px 8px"
+				}, "corePageAddLocalizedContainer");
+
+				new dijit.form.TextBox({
+					value: item.name[0],
+					style: "width: 300px",
+					readOnly: true
+				}).placeAt(div);
+				
+				new dijit.form.TextBox({
+					value: item.language[0],
+					style: "margin: 0 8px; width: 100px",
+					readOnly: true
+				}).placeAt(div);
+
+				dojoDomConstruct.create("input", {
+					name: "translations",
+					type: "hidden",
+					value: item.translations[0]
+				}, div);
+
+				new dijit.form.Button({
+					label: "<?php echo $this->translator()->_('global._share.deleteAction'); ?>",
+					onClick: function() {
+						dojoDomConstruct.destroy(div);
+						if (dojo.query(".corePageAddLocalizedItem", "corePageAddLocalizedContainer").length == 0) {
+							// Show the guide
+							dojoDomStyle.set("corePageAddLocalizedHelp", "display", "block");
+						}
+					}
+				}).placeAt(div);
+			});
+		});
+
+		var handler = dojoTopic.subscribe("/app/global/onLoadComplete/core_page_add", function() {
+			<?php if ($this->source) : ?>
+			dijitRegistry.byId("corePageAddRouteSelect").set("value", "<?php echo $this->source->route; ?>");
+			<?php endif; ?>
+
+			handler.remove();
+		});
+	});	
+});
+</script>

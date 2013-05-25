@@ -1,0 +1,150 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		tag
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-08-24
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php
+$this->headTitle()->set($this->translator()->_('tag.add.title'));
+?>
+
+<div id="tagTagAddForm" data-dojo-type="dijit/form/Form" data-dojo-props="action: '', method: 'POST', class: 'app-form'">
+	<script type="dojo/method" data-dojo-event="onSubmit" data-dojo-args="e">
+	e.preventDefault();
+	var that = this;
+	require([
+		"dojo/dom-form",
+		"dojo/request/xhr",
+		"dojo/topic",
+		"dijit/registry"
+	], function(dojoDomForm, dojoRequestXhr, dojoTopic, dijitRegistry) {
+		if (that.validate()) {
+			dojoRequestXhr("<?php echo $this->url(array(), 'tag_tag_add'); ?>", {
+				data: dojoDomForm.toObject("tagTagAddForm"),
+				handleAs: "json",
+				method: "POST"
+			}).then(function(data) {
+				that.reset();
+				dijitRegistry.byId("tagTagAddSaveButton").set("disabled", true);
+				dojoTopic.publish("/app/tag/tag/add/onComplete", data);
+			});
+		}
+	});
+	</script>
+	
+	<div class="app-form-row-vertical">
+		<label for="slug"><?php echo $this->translator()->_('tag._share.language'); ?>:</label>
+		<select id="tagTagAddLanguageSelect" data-dojo-type="dijit/form/Select" data-dojo-props="name: 'language', value: '<?php echo $this->language; ?>'">
+			<?php foreach ($this->languages as $language => $name) : ?>
+			<option value="<?php echo $language; ?>"><?php echo $name; ?></option>
+			<?php endforeach; ?>
+		</select>
+	</div>
+	
+	<div class="app-form-row-vertical">
+		<label for="title"><?php echo $this->translator()->_('tag._share.title'); ?>:</label>
+		<div id="tagTagAddTitleTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', name: 'title', value: '<?php echo addslashes($this->title); ?>', style: 'width: 200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('tag._share.titleRequired'); ?>'">
+			<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+			require([
+				"dojo/request/xhr",
+				"dijit/registry"
+			], function(dojoRequestXhr, dijitRegistry) {
+				dojoRequestXhr("<?php echo $this->url(array(), 'core_helper_slug'); ?>", {
+					data: {
+						locale: dijitRegistry.byId("tagTagAddLanguageSelect").get("value"),
+						input: value
+					},
+					handleAs: "json",
+					method: "POST"
+				}).then(function(data) {
+					dijitRegistry.byId("tagTagAddSlugTextBox").set("value", data.output);
+				});
+			});
+			</script>
+		</div>
+	</div>
+	
+	<div class="app-form-row-vertical">
+		<label for="slug"><?php echo $this->translator()->_('tag._share.slug'); ?>:</label>
+		<div id="tagTagAddSlugTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', name: 'slug', style: 'width: 200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('tag._share.slugRequired'); ?>'">
+			<script type="dojo/on">
+			var that = this;
+			require([
+				"dojo/request/xhr",
+				"dojo/topic",
+				"dijit/registry"
+			], function(dojoRequestXhr, dojoTopic, dijitRegistry) {
+				that.generateSlug = function(value) {
+					if (value == "") {
+						return;
+					}
+					dojoRequestXhr("<?php echo $this->url(array(), 'tag_tag_validate'); ?>", {
+						data: {
+							language: dijitRegistry.byId("tagTagAddLanguageSelect").get("value"),
+							slug: value
+						},
+						handleAs: "json",
+						method: "POST"
+					}).then(function(data) {
+						if (data.result == true) {
+							dijitRegistry.byId("tagTagAddSaveButton").set("disabled", false);
+						} else {
+							dijitRegistry.byId("tagTagAddSaveButton").set("disabled", true);
+							dojoTopic.publish("/app/global/notification", {
+								message: "<?php echo $this->translator()->_('tag._share.slugValidator'); ?>",
+								type: "error"
+							});
+						}
+					});
+				};
+				var title = dijitRegistry.byId("tagTagAddTitleTextBox").get("value");
+				if (title) {
+					dijitRegistry.byId("tagTagAddTitleTextBox").onChange(title);
+				}
+			});
+			</script>
+			<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+			this.generateSlug(value);
+			</script>
+		</div>
+	</div>
+
+	<div class="dijitDialogPaneActionBar">
+		<button id="tagTagAddSaveButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'submit', disabled: true">
+			<?php echo $this->translator()->_('global._share.addAction'); ?>
+		</button>
+
+		<button id="tagTagAddCancelButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+			<?php echo $this->translator()->_('global._share.cancelAction'); ?>
+			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+			require(["dojo/topic"], function(dojoTopic) {
+				dojoTopic.publish("/app/tag/tag/add/onCancel");
+			});
+			</script>
+		</button>
+	</div>
+
+	<input type="hidden" name="format" value="json" />
+</div>
+
+<script type="text/javascript">
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/Select",
+	"dijit/form/ValidationTextBox"	
+]);
+</script>

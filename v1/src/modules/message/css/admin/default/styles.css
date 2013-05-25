@@ -1,0 +1,120 @@
+/**
+ * NextCMS
+ *
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		message
+ * @subpackage	css
+ * @since		1.0
+ * @version		2012-08-24
+ */
+
+.module-message-attachment {
+	background: url(images/attachment.png) center right no-repeat; padding: 4px 20px 4px 0;
+}
+
+/* Icons */
+.module-message-icon-read {
+	background-image: url(images/read.png);
+}
+.module-message-icon-reply {
+	background-image: url(images/reply.png);
+}
+.module-message-icon-replyall {
+	background-image: url(images/reply-all.png);
+}
+.module-message-icon-send {
+	background-image: url(images/send.png);
+}
+.module-message-icon-unread {
+	background-image: url(images/unread.png);
+}
+
+/* List messages in a grid */
+.module-message-row-unread {
+	font-weight: bold;
+}
+
+/* List messages in the same thread */
+.module-message-items {}
+.module-message-item {
+	position: relative;
+}
+.module-message-item-notstarred {
+	background: url(images/unstar.png) center left no-repeat;
+	padding: 4px 0 4px 20px;
+}
+.module-message-item-read {
+	font-weight: normal;
+}
+.module-message-item-starred {
+	background: url(images/star.png) center left no-repeat;
+	padding: 4px 0 4px 20px;
+}
+.module-message-item-unread {
+	font-weight: bold;
+}
+.module-message-item-mine {
+	/*background-color: #CEE6FA;*/
+}
+.module-message-item-content {}
+.module-message-item-sender,
+.module-message-item-recipient {
+	font-weight: bold;
+}
+.module-message-quote-content {
+	border-left: 1px solid #B5BCC7;
+	padding-left: 8px;
+}
+.module-message-quote-toggler {
+	color: #B5BCC7;
+	cursor: pointer;
+	padding: 4px 0;
+}
+.module-message-quote-toggler:before,
+.module-message-quote-toggler:after {
+	content: "---";
+}
+
+/* Private message folder */
+.module-message-folders {
+	list-style-type: none;
+	margin: 0;
+	padding: 0px;
+}
+.module-message-folders li {
+	clear: both;
+	margin: 0;
+	padding: 8px;
+}
+.module-message-folder .app-counter {
+	float: right;
+}
+.module-message-folder-starred .module-message-folder-name {
+	background: url(images/star.png) center right no-repeat;
+	padding: 4px 20px 4px 0;
+}
+.module-message-folder-trash .module-message-folder-name {
+	background: url(images/trash-empty.png) center right no-repeat;
+	padding: 4px 20px 4px 0;
+}
+.module-message-folder-active {
+	background-color: #769DC0;
+}
+.module-message-folder-active a,
+.module-message-folder-active a:visited {
+	color: #FFF;
+}
+.module-message-folder-active .app-counter {
+	color: #000;
+}
+.module-message-folder-hover {
+	background-color: #CFE5FA;
+}
+.module-message-folder-hover a,
+.module-message-folder-hover a:visited {
+	color: #FFF;
+}
