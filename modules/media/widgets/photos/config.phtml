@@ -1,0 +1,296 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		media
+ * @subpackage	widgets
+ * @since		1.0
+ * @version		2012-09-11
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<script type="text/javascript">
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/media/widgets/photos/admin.css");	
+});
+</script>
+
+<div class="app-form">
+	<div class="app-form-row" style="width: 100%">
+		<div data-dojo-type="dijit/layout/TabContainer" data-dojo-props="nested: true, style: 'height: 100%; width: 100%', closable: true, doLayout: false">
+			<!-- Basic -->
+			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="selected: true, title: '<?php echo $this->translator(true)->_('config.basic'); ?>', style: 'padding-top: 8px'">
+				<div class="app-form-row-vertical">
+					<label for="lang"><?php echo $this->translator()->_('config.language'); ?>:</label>
+					<select data-dojo-type="dijit/form/Select" data-dojo-props="name: 'language', value: '<?php echo $this->language; ?>', class: 'appWidgetInput'">
+						<?php if ($this->languages) : ?>
+						<?php foreach ($this->languages as $language => $name) : ?>
+						<option value="<?php echo $language; ?>"><?php echo $name; ?></option>
+						<?php endforeach; ?>
+						<?php endif; ?>
+						
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						// Update the category select box
+						require([
+							"dojo/request/xhr",
+							"dijit/registry",
+							"dojo/data/ItemFileReadStore"
+						], function(dojoRequestXhr, dijitRegistry) {
+							dojoRequestXhr("<?php echo $this->url(array(), 'core_extension_render'); ?>", {
+								data: {
+									_type: "widget",
+									_mod: "media",
+									_name: "photos",
+									_method: "album",
+									noRenderScript: true,
+									language: value
+								},
+								handleAs: "json",
+								method: "POST"
+							}).then(function(data) {
+								var albumSelect = dijitRegistry.byId("mediaWidgetsPhotosConfigAlbumSelect_<?php echo $this->uid; ?>");
+								albumSelect.store = new dojo.data.ItemFileReadStore({
+									data: data
+								});
+							});
+						});
+						</script>
+					</select>
+				</div>
+			
+				<div class="app-form-row-vertical">
+					<label for="limit"><?php echo $this->translator()->_('config.numberOfPhotos'); ?>:</label>
+					<input data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="name: 'limit', class: 'appWidgetInput', style: 'width: 100px'" />
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<label for="album_id"><?php echo $this->translator()->_('config.album'); ?>:</label>
+					<select id="mediaWidgetsPhotosConfigAlbumSelect_<?php echo $this->uid; ?>" data-dojo-type="dijit/form/FilteringSelect" data-dojo-props="name: 'album_id', value: '<?php echo $this->album_id; ?>', class: 'appWidgetInput', searchAttr: 'title'">
+						<script type="dojo/on">
+						var that = this;
+						require(["dojo/data/ItemFileReadStore"], function() {
+							that.store = new dojo.data.ItemFileReadStore({
+								data: <?php echo $this->albums; ?>
+							});
+						});
+						</script>
+					</select>
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<label for="keyword"><?php echo $this->translator()->_('config.keyword'); ?>:</label>
+					<input data-dojo-type="dijit/form/TextBox" data-dojo-props="name: 'keyword', class: 'appWidgetInput'" />
+				</div>
+			</div>
+			<!-- /Basic -->
+			
+			<!-- DataSource -->
+			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title: '<?php echo $this->translator(true)->_('config.dataSource'); ?>', style: 'padding-top: 8px'">
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'latest', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("mediaWidgetsPhotosConfigSetContainer_<?php echo $this->uid; ?>", "display", "none");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.latestPhotos'); ?>
+				</div>
+				
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'most_commented', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("mediaWidgetsPhotosConfigSetContainer_<?php echo $this->uid; ?>", "display", "none");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.mostCommentedPhotos'); ?>
+				</div>
+				
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'most_viewed', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("mediaWidgetsPhotosConfigSetContainer_<?php echo $this->uid; ?>", "display", "none");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.mostViewedPhotos'); ?>
+				</div>
+				
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'most_downloaded', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("mediaWidgetsPhotosConfigSetContainer_<?php echo $this->uid; ?>", "display", "none");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.mostDownloadedPhotos'); ?>
+				</div>
+				
+				<div class="app-form-row">
+					<div data-dojo-type="dijit/form/RadioButton" data-dojo-props="type: 'radio', name: 'data_source', value: 'set', class: 'appWidgetInput'">
+						<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+						require(["dojo/dom-style"], function(dojoDomStyle) {
+							if (value) {
+								dojoDomStyle.set("mediaWidgetsPhotosConfigSetContainer_<?php echo $this->uid; ?>", "display", "none");
+							}
+						});
+						</script>
+					</div>
+					<?php echo $this->translator()->_('config.setOfPhotos'); ?>
+				</div>
+				
+				<div class="app-form-row" id="mediaWidgetsPhotosConfigSetContainer_<?php echo $this->uid; ?>" style="display: none; margin: 0 5px">
+					<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="style: 'height: 200px; padding: 0; width: 100%', class: 'app-container-border'">
+						<div id="mediaWidgetsPhotosConfigPhotosContainer_<?php echo $this->uid; ?>" class="widget-media-photos-config-photos" style="height: 100%">
+							<div id="mediaWidgetsPhotosConfigSetHelp_<?php echo $this->uid; ?>" style="display: <?php if (count($this->photos) == 0) : ?>block<?php else : ?>none<?php endif; ?>; padding-top: 100px; text-align: center">
+								<?php echo $this->translator()->_('config.dragDropHelp'); ?>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- /DataSource -->
+			
+			<!-- Theme -->
+			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title: '<?php echo $this->translator(true)->_('config.theme'); ?>', style: 'padding-top: 8px'">
+				<div class="app-form-row">
+					<input data-dojo-type="dijit/form/TextBox" data-dojo-props="name: 'theme', class: 'appWidgetInput'" />
+				</div>
+			</div>
+			<!-- /Theme -->
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+require([
+	"dojo/_base/array",
+	"dojo/_base/declare",
+	"dojo/dom-attr",
+	"dojo/dom-construct",
+	"dojo/dom-style",
+	"dojo/on",
+	"dojo/ready",
+	"dojo/parser",
+	"dojo/query",
+	"dijit/form/CheckBox",
+	"dijit/form/FilteringSelect",
+	"dijit/form/Select",
+	"dijit/form/TextBox",
+	"dijit/form/ValidationTextBox",
+	"dijit/layout/ContentPane",
+	"dijit/layout/TabContainer",
+	"dojo/data/ItemFileReadStore",
+	"dojo/dnd/AutoSource",
+	"dojo/window",
+	"dojox/fx",
+	"core/js/base/Encoder",
+	"core/js/Constant"
+], function(dojoArray, dojoDeclare, dojoDomAttr, dojoDomConstruct, dojoDomStyle, dojoOn, dojoReady) {
+	dojoDeclare("media.widgets.photos.ConfigController", null, {});
+
+	// Array of photo's Ids in the set
+	media.widgets.photos.ConfigController._photoIds = [];
+
+	media.widgets.photos.ConfigController.addPhoto = function(/*Object*/ photo, /*String*/ uid) {
+		// summary:
+		//		Adds a photo to the set
+		// photo:
+		//		The photo data, contains the following properties:
+		//		- title
+		//		- photo_id
+		//		- image_square
+		// uid:
+		//		The unique Id which can be used to define the set container
+		if (dojoArray.indexOf(media.widgets.photos.ConfigController._photoIds, photo.photo_id) != -1) {
+			return;
+		}
+		media.widgets.photos.ConfigController._photoIds.push(photo.photo_id);
+		
+		var div = dojoDomConstruct.create("div", {
+			className: "dojoDndItem widget-media-photos-config-photo",
+			dndtype: "widget-media-photos-config-photoDnd"
+		}, "mediaWidgetsPhotosConfigPhotosContainer_" + uid);
+
+		// Photo thumbnail
+		dojoDomConstruct.create("img", {
+			src: core.js.Constant.normalizeUrl(photo.image_square),
+			title: photo.title,
+			className: "app-left"
+		}, div);
+
+		dojoDomConstruct.create("br", {}, div);
+		
+		// Removing action
+		var removingLink = dojoDomConstruct.create("a", {
+			href: "javascript: void(0);",
+			innerHTML: "<?php echo $this->translator()->_('config.removeAction'); ?>"
+		}, div);
+		dojoOn(removingLink, "click", function() {
+			dojoDomConstruct.destroy(div);
+			var index = dojoArray.indexOf(media.widgets.photos.ConfigController._photoIds, photo.photo_id);
+			media.widgets.photos.ConfigController._photoIds.splice(index, 1);
+			
+			// Show the guide if there is no photos
+			if (dojo.query(".widget-media-photos-config-photo", "mediaWidgetsPhotosConfigPhotosContainer_" + uid).length == 0) {
+				dojoDomStyle.set("mediaWidgetsPhotosConfigSetHelp_" + uid, "display", "block");
+			}
+		});
+
+		// Hidden input
+		dojoDomConstruct.create("input", {
+			type: "hidden",
+			appWidgetInputName: "photo_ids[]",
+			name: "photo_ids[]",
+			value: photo.photo_id,
+			className: "appWidgetInput"
+		}, div);
+		
+		dojoDomConstruct.create("div", {
+			className: "app-clear"
+		}, div);	
+	};
+
+	dojoReady(function() {
+		// Load the photos in set
+		<?php foreach ($this->photos as $photo) : ?>
+		media.widgets.photos.ConfigController.addPhoto(<?php echo Zend_Json::encode($photo); ?>, "<?php echo $this->uid; ?>");
+		<?php endforeach; ?>
+		
+		new dojo.dnd.AutoSource("mediaWidgetsPhotosConfigPhotosContainer_<?php echo $this->uid; ?>", {
+			accept: ["mediaPhotoDndItem"],
+			onDropExternal: function(source, nodes, copy) {
+				var node = nodes[0];
+				if (dojoDomAttr.get(node, "data-app-entity-class") != "Media_Models_Photo") {
+					return;
+				}
+
+				// Hide the guides
+				dojoDomStyle.set("mediaWidgetsPhotosConfigSetHelp_<?php echo $this->uid; ?>", "display", "none");
+				
+				var photo = core.js.base.Encoder.decode(dojo.attr(node, "data-app-entity-props"));
+				media.widgets.photos.ConfigController.addPhoto(photo, "<?php echo $this->uid; ?>");
+			}
+		});
+	});
+});
+</script>

@@ -1,0 +1,177 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		core
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-09-12
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php 
+$this->headTitle()->set($this->translator()->_('plugin.list.title'));
+?>
+
+<script type="text/javascript">
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");	
+});
+</script>
+
+<div id="corePluginListContainer" class="coreExtensionItemsContainer app-content-pane">
+	<?php if (!$this->plugins || count($this->plugins) == 0) : ?>
+		<?php echo $this->translator()->_('plugin.list.notFound'); ?>
+	<?php else : ?>
+
+	<?php foreach ($this->plugins as $plugin) : ?>
+	<div class="coreExtensionItem">
+		<div class="coreExtensionItemThumbnail">
+			<img src="<?php echo $plugin->thumbnail; ?>" />
+		</div>
+		
+		<div class="coreExtensionItemDescription">
+			<h3><?php echo $this->extensionTranslator()->translateTitle($plugin); ?></h3>
+			<div style="padding-bottom: 8px"><?php echo $this->extensionTranslator()->translateDescription($plugin); ?></div>
+			
+			<!-- EnableButon -->
+			<div id="corePluginListEnableButton_<?php echo $plugin->module; ?>_<?php echo $plugin->name; ?>" data-dojo-type="dijit/form/CheckBox" data-dojo-props="appPluginModule: '<?php echo $plugin->module; ?>', appPluginName: '<?php echo $plugin->name; ?>', disabled: <?php if (!$plugin->is_installed || (!$this->accessor()->route('core_plugin_enable') && $plugin->enabled == '1') || (!$this->accessor()->route('core_plugin_disable') && $plugin->enabled == '0')) : ?>true<?php else : ?>false<?php endif; ?>, checked: <?php if ($plugin->is_installed && $plugin->enabled == '1') : ?>true<?php else : ?>false<?php endif; ?>">
+				<script type="dojo/method" data-dojo-event="onChange" data-dojo-args="value">
+				var that = this;
+				require([
+					"dojo/request/xhr",
+					"dojo/topic",
+					"dojox/string/sprintf"
+				], function(dojoRequestXhr, dojoTopic) {
+					that.set("disabled", true);
+					var module = that.get("appPluginModule");
+					var name   = that.get("appPluginName");
+					dojoRequestXhr(value ? "<?php echo $this->url(array(), 'core_plugin_enable'); ?>" : "<?php echo $this->url(array(), 'core_plugin_disable'); ?>", {
+						data: {
+							mod: module,
+							name: name
+						},
+						handleAs: "json",
+						method: "POST"
+					}).then(function(data) {
+						var message = ("APP_RESULT_OK" == data.result)
+									? (value ? "<?php echo $this->translator()->_('plugin.enable.success'); ?>" : "<?php echo $this->translator()->_('plugin.disable.success'); ?>") 
+									: (value ? "<?php echo $this->translator()->_('plugin.enable.error'); ?>" : "<?php echo $this->translator()->_('plugin.disable.error'); ?>");
+						dojoTopic.publish("/app/global/notification", {
+							message: dojox.string.sprintf(message, name),
+							type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+						});
+						that.set("disabled", false);
+
+						if ("APP_RESULT_OK" == data.result) {
+							// Reload the current page
+							window.location.reload();
+						}
+					});
+				});
+				</script>
+			</div>
+			<span><?php echo $this->translator()->_('global._share.enableAction'); ?></span>
+			<!-- /EnableButon -->
+			 
+			<!-- InstallButton -->
+			<button id="corePluginListInstallButton_<?php echo $plugin->module; ?>_<?php echo $plugin->name; ?>" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button', disabled: <?php if ((!$this->accessor()->route('core_plugin_install') && !$plugin->is_installed) || (!$this->accessor()->route('core_plugin_uninstall') && $plugin->is_installed)) : ?>true<?php else : ?>false<?php endif; ?>, appPluginModule: '<?php echo $plugin->module; ?>', appPluginName: '<?php echo $plugin->name; ?>', appIsPluginInstalled: <?php if ($plugin->is_installed) : ?>true<?php else : ?>false<?php endif; ?>">
+				<?php echo $plugin->is_installed ? $this->translator()->_('global._share.uninstallAction') : $this->translator()->_('global._share.installAction'); ?>
+				<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+				var that = this;
+				require([
+					"dojo/request/xhr",
+					"dojo/topic",
+					"dojox/string/sprintf"
+				], function(dojoRequestXhr, dojoTopic) {
+					that.set("disabled", true);
+					var isInstalled = that.get("appIsPluginInstalled");
+					var module		= that.get("appPluginModule");
+					var name		= that.get("appPluginName");
+					dojoRequestXhr(isInstalled ? "<?php echo $this->url(array(), 'core_plugin_uninstall'); ?>" : "<?php echo $this->url(array(), 'core_plugin_install'); ?>", {
+						data: {
+							mod: module,
+							name: name
+						},
+						handleAs: "json",
+						method: "POST"
+					}).then(function(data) {
+						var message = ("APP_RESULT_OK" == data.result)
+									? (isInstalled ? "<?php echo $this->translator()->_('plugin.uninstall.success'); ?>" : "<?php echo $this->translator()->_('plugin.install.success'); ?>") 
+									: (isInstalled ? "<?php echo $this->translator()->_('plugin.uninstall.error'); ?>" : "<?php echo $this->translator()->_('plugin.install.error'); ?>");
+						dojoTopic.publish("/app/global/notification", {
+							message: dojox.string.sprintf(message, name),
+							type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+						});
+						that.set("disabled", false);
+
+						if ("APP_RESULT_OK" == data.result) {
+							that.set("appIsPluginInstalled", !isInstalled);
+							that.set("label", isInstalled ? "<?php echo $this->translator()->_('global._share.installAction'); ?>" : "<?php echo $this->translator()->_('global._share.uninstallAction'); ?>");
+							dojoTopic.publish("/app/core/plugin/" + (isInstalled ? "uninstall" : "install") + "/" + module + "_" + name, {
+								module: module,
+								name: name
+							});
+
+							// Reload the current page
+							window.location.reload();
+						}
+					});
+				});
+				</script>
+			</button>
+			<!-- /InstallButton -->
+			
+			<!-- ConfigButton -->
+			<?php if ($plugin->options) : ?>
+			<button id="corePluginListConfigureButton_<?php echo $plugin->module; ?>_<?php echo $plugin->name; ?>" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button', disabled: <?php if (!$plugin->is_installed || !$this->accessor()->route('core_plugin_config')) : ?>true<?php else : ?>false<?php endif; ?>, appPluginConfigAllowed: <?php if ($this->accessor()->route('core_plugin_config')) : ?>true<?php else : ?>false<?php endif; ?>, appPluginModule: '<?php echo $plugin->module; ?>', appPluginName: '<?php echo $plugin->name; ?>'">
+				<?php echo $this->translator()->_('global._share.configureAction'); ?>
+				<script type="dojo/on">
+				// DOJO LESSON: I can use dojo/on without the event.
+				// This is best way to disable/enable the Configure button based on the installing status
+				var that = this;
+				require(["dojo/topic"], function(dojoTopic) {
+					dojoTopic.subscribe("/app/core/plugin/install/" + that.get("appPluginModule") + "_" + that.get("appPluginName"), function(data) {
+						that.set("disabled", !that.get("appPluginConfigAllowed"));
+					});
+					dojoTopic.subscribe("/app/core/plugin/uninstall/" + that.get("appPluginModule") + "_" + that.get("appPluginName"), function(data) {
+						that.set("disabled", true);
+					});
+				});
+				</script>
+				<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+				var that = this;
+				require(["dojo/topic"], function(dojoTopic) {
+					dojoTopic.publish("/app/core/plugin/config/onLoadForm", {
+						mod: that.get("appPluginModule"),
+						name: that.get("appPluginName")
+					});
+				});
+				</script>
+			</button>
+			<?php endif; ?>
+			<!-- /ConfigButton -->
+		</div>
+		
+		<div style="clear: both"></div>
+	</div>
+	<?php endforeach; ?>
+	
+	<?php endif; ?>
+</div>
+
+<script type="text/javascript">
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/CheckBox",
+	"dojox/widget/DialogSimple"
+]);
+</script>

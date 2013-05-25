@@ -1,0 +1,110 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		core
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-09-26
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php 
+$this->headTitle()->set($this->translator()->_('privilege.list.title'));
+?>
+
+<script type="text/javascript">
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");	
+});
+</script>
+
+<div id="corePrivilegeListForm" data-dojo-type="dijit/form/Form" data-dojo-props="region: 'center', action: '', method: 'POST'">
+	<div id="corePrivilegeListContainer" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="gutters: false, style: 'height: 100%; padding: 0; width: 100%', class: 'app-container-border'">
+		<!-- Toolbar -->
+		<div data-dojo-type="dijit/Toolbar" data-dojo-props="region: 'top', splitter: false">
+			<button id="corePrivilegeListSaveButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+				<span class="app-icon app-icon-save"></span><br />
+				<?php echo $this->translator()->_('global._share.saveAction'); ?>
+				<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+				var that = this;
+				require([
+					"dojo/dom-form",
+					"dojo/request/xhr",
+					"dojo/topic",
+					"dijit/registry"
+				], function(dojoDomForm, dojoRequestXhr, dojoTopic, dijitRegistry) {
+					dijitRegistry.byId("corePrivilegeListStandby").show();
+					that.set("disabled", true);
+					dojoRequestXhr("<?php echo $this->url(array(), 'core_privilege_list'); ?>", {
+						data: dojoDomForm.toObject("corePrivilegeListForm"),
+						handleAs: "json",
+						method: "POST"
+					}).then(function(data) {
+						dijitRegistry.byId("corePrivilegeListStandby").hide();
+						that.set("disabled", false);
+						dojoTopic.publish("/app/global/notification", {
+							message: ("APP_RESULT_OK" == data.result) ? "<?php echo $this->translator()->_('privilege.list.success'); ?>" : "<?php echo $this->translator()->_('privilege.list.error'); ?>",
+							type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+						});
+	
+						if ("APP_RESULT_OK" == data.result) {
+							// Reload the current page
+							window.location.reload();
+						}
+					});
+				});
+				</script>
+			</button>
+		</div>
+		<!-- /Toolbar -->
+	
+		<!-- Privileges -->
+		<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="region: 'center', design: 'sidebar', gutters: false">
+			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'top', class: 'app-content-pane'">
+				<?php echo $this->translator()->_('privilege.list.help'); ?>
+			</div>
+		
+			<div data-dojo-type="dijit/layout/TabContainer" data-dojo-props="region: 'center', closable: true, nested: true, class: 'app-content-pane'">
+				<?php if ($this->modules) : ?>
+				<?php foreach ($this->modules as $index => $module) : ?>
+				<div id="corePrivilegeListContentPane_<?php echo $module->name; ?>" data-dojo-type="dojox/layout/ContentPane" data-dojo-props="region: 'center', style: 'margin-top: 8px', title: '<?php echo $this->extensionTranslator()->translateTitle($module); ?>', href: '<?php echo $this->url(array(), 'core_privilege_list'); ?>?format=html&mod=<?php echo $module->name; ?>', loadingMessage: '<?php echo '<div class=app-center><div><span class=dijitContentPaneLoading>' . $this->translator()->_('global._share.loadingAction') . '</span></div></div>'; ?>'">
+				</div>
+				<?php endforeach; ?>
+				<?php endif; ?>
+			</div>
+		</div>
+		<!-- /Privileges -->
+		
+		<?php if ($this->modules) : ?>
+		<?php foreach ($this->modules as $index => $module) : ?>
+		<input type="hidden" name="modules[]" value="<?php echo $module->name; ?>" />
+		<?php endforeach; ?>
+		<?php endif; ?>
+		<input type="hidden" name="format" value="json" />
+	</div>
+</div>
+
+<div id="corePrivilegeListStandby" data-dojo-type="dojox/widget/Standby" data-dojo-props="target: 'corePrivilegeListContainer', imageText: '<?php echo $this->translator(true)->_('global._share.loadingAction'); ?>'"></div>
+
+<script type="text/javascript">
+document.title = "<?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('privilege.list.title'); ?>";
+
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dijit/layout/TabContainer",
+	"dijit/Toolbar",
+	"dojox/widget/Standby"
+]);
+</script>

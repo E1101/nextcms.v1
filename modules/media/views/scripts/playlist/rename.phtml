@@ -1,0 +1,103 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		media
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-08-30
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php
+$this->headTitle()->set($this->translator()->_('playlist.rename.title'));
+?>
+
+<div id="mediaPlaylistRenameForm" data-dojo-type="dijit/form/Form" data-dojo-props="action: '', method: 'POST', class: 'app-form'">
+	<script type="dojo/method" data-dojo-event="onSubmit" data-dojo-args="e">
+	e.preventDefault();
+	var that = this;
+	require([
+		"dojo/dom-form",
+		"dojo/request/xhr",
+		"dojo/topic"
+	], function(dojoDomForm, dojoRequestXhr, dojoTopic) {
+		dojoRequestXhr("<?php echo $this->url(array(), 'media_playlist_rename'); ?>", {
+			data: dojoDomForm.toObject("mediaPlaylistRenameForm"),
+			handleAs: "json",
+			method: "POST"
+		}).then(function(data) {
+			dojoTopic.publish("/app/media/playlist/rename/onComplete", data);
+		});
+	});
+	</script>
+
+	<?php if (!$this->playlist) : ?>
+		<?php echo sprintf($this->translator()->_('playlist.rename.notFound'), $this->playlistId); ?>
+	<?php else : ?>
+
+	<div class="app-form-row">
+		<label for="title"><?php echo $this->translator()->_('playlist._share.title'); ?>:</label>
+		<div id="mediaPlaylistRenameTitleTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', name: 'title', value: '<?php echo addslashes($this->playlist->title); ?>', style: 'width: 200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('playlist._share.titleRequired'); ?>'">
+			<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+			require([
+				"dojo/request/xhr",
+				"dijit/registry"
+			], function(dojoRequestXhr, dijitRegistry) {
+				dojoRequestXhr("<?php echo $this->url(array(), 'core_helper_slug'); ?>", {
+					data: {
+						input: value
+					},
+					handleAs: "json",
+					method: "POST"
+				}).then(function(data) {
+					dijitRegistry.byId("mediaPlaylistRenameSlugTextBox").set("value", data.output);
+				});
+			});
+			</script>
+		</div>
+	</div>
+	
+	<div class="app-form-row">
+		<label for="slug"><?php echo $this->translator()->_('playlist._share.slug'); ?>:</label>
+		<input id="mediaPlaylistRenameSlugTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', name: 'slug', value: '<?php echo addslashes($this->playlist->slug); ?>', style: 'width: 200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('playlist._share.slugRequired'); ?>'" />
+	</div>
+	
+	<?php endif; ?>
+
+	<div class="dijitDialogPaneActionBar">
+		<?php if ($this->playlist) : ?>
+		<button id="mediaPlaylistRenameSaveButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'submit'">
+			<?php echo $this->translator()->_('global._share.saveAction'); ?>
+		</button>
+		<?php endif; ?>
+
+		<button id="mediaPlaylistRenameCancelButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+			<?php echo $this->translator()->_('global._share.cancelAction'); ?>
+			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+			require(["dojo/topic"], function(dojoTopic) {
+				dojoTopic.publish("/app/media/playlist/rename/onCancel");
+			});
+			</script>
+		</button>
+	</div>
+
+	<input type="hidden" name="format" value="json" />
+	<input type="hidden" name="playlist_id" value="<?php echo $this->playlistId; ?>" />
+</div>
+
+<script type="text/javascript">
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/ValidationTextBox"	
+]);
+</script>

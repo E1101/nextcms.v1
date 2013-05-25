@@ -1,0 +1,335 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		message
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-09-26
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php
+$this->headTitle()->set($this->translator()->_('message.send.title'));
+?>
+
+<div id="messageMessageSendForm" data-dojo-type="dijit/form/Form" data-dojo-props="action: '', method: 'POST', encType: 'multipart/form-data', class: 'app-form'">
+	<div id="messageMessageSendContainer" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design: 'sidebar', gutters: false, style: 'height: 100%; width: 100%'">
+		<!-- Toolbar -->
+		<div data-dojo-type="dijit/Toolbar" data-dojo-props="region: 'top', splitter: false">
+			<button id="messageMessageSendSendButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+				<span class="app-icon module-message-icon-send"></span><br />
+				<?php echo $this->translator()->_('global._share.sendAction'); ?>
+				<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+				var that = this;
+				require([
+					"dojo/dom-form",
+					"dojo/request/xhr",
+					"dojo/topic",
+					"dijit/registry"
+				], function(dojoDomForm, dojoRequestXhr, dojoTopic, dijitRegistry) {
+					var form   = dijitRegistry.byId("messageMessageSendForm");
+					var params = dojoDomForm.toObject("messageMessageSendForm");
+		
+					// I have to get the message's content manually
+					params.content = tinyMCE.getInstanceById("messageMessageSendContentEditor").getContent();
+					
+					if (params["to_address[]"] == null || params["to_address[]"].length == 0) {
+						dojoTopic.publish("/app/global/notification", {
+							message: "<?php echo $this->translator()->_('message._share.toAddressRequired'); ?>",
+							type: "error"
+						});
+						return;
+					}
+					if (params.content == "") {
+						dojoTopic.publish("/app/global/notification", {
+							message: "<?php echo $this->translator()->_('message._share.contentRequired'); ?>",
+							type: "error"
+						});
+						return;
+					}
+		
+					if (form.validate()) {
+						// Disable button
+						that.set("disabled", true);
+					
+						dijitRegistry.byId("messageMessageSendStandby").show();
+						dojoRequestXhr("<?php echo $this->url(array(), 'message_message_send'); ?>", {
+							data: params,
+							handleAs: "json",
+							method: "POST"
+						}).then(function(data) {
+							dijitRegistry.byId("messageMessageSendStandby").hide();
+							form.reset();
+							that.set("disabled", false);
+							dojoTopic.publish("/app/message/message/send/onComplete", data);
+						});
+					}
+				});
+				</script>
+			</button>
+		
+			<button id="messageMessageSendCancelButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+				<span class="app-icon app-icon-cancel"></span><br />
+				<?php echo $this->translator()->_('global._share.cancelAction'); ?>
+				<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+				require(["dojo/topic"], function(dojoTopic) {
+					dojoTopic.publish("/app/message/message/send/onCancel", "<?php echo $this->containerId; ?>");
+				});
+				</script>
+			</button>
+		</div>
+		<!-- /Toolbar -->
+		
+		<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="region: 'center', design: 'sidebar', gutters: false">
+			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'top', class: 'app-content-pane'">
+				<h2 class="app-heading" style="margin: 0"><span><?php echo $this->translator()->_('message.send.title'); ?></span></h2>
+			</div>
+			
+			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'center', class: 'app-content-pane'">
+				<div class="app-form-row-vertical">
+					<label for="subject"><?php echo $this->translator()->_('message._share.subject'); ?>:</label>
+					<input id="messageMessageSendSubjectTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="type: 'text', name: 'subject', value: '<?php if ($this->message) : ?><?php echo $this->translator()->_('message._share.replyPrefix'); ?><?php echo addslashes($this->message->subject); ?><?php endif; ?>', style: 'width: 400px', required: true, missingMessage: '<?php echo $this->translator(true)->_('message._share.subjectRequired'); ?>'" />		
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<label for="to"><?php echo $this->translator()->_('message._share.toAddress'); ?>:</label>
+					<i><?php echo $this->translator()->_('message._share.toAddressHelp'); ?></i>
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<div id="messageMessageSendToAddressContainer"></div>
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<label for="bcc"><?php echo $this->translator()->_('message._share.bccAddress'); ?>:</label>
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<div id="messageMessageSendBccAddressContainer"></div>
+				</div>
+	
+				<!-- AttachmentsUploader -->
+				<div class="app-form-row-vertical">
+					<label for="attachments"><?php echo $this->translator()->_('message._share.attachments'); ?>:</label>
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<div id="messageMessageSendAttachmentUploaderContainer">
+					</div>
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<div class="app-container-border" id="messageMessageSendAttachmentsContainer" style="display: none"></div>
+				</div>
+				<!-- /AttachmentsUploader -->
+				
+				<div class="app-form-row-vertical">
+					<label for="content"><?php echo $this->translator()->_('message._share.content'); ?>:</label>
+				</div>
+				
+				<div class="app-form-row-vertical">
+					<textarea id="messageMessageSendContentEditor" name="content" style="height: 300px; width: 400px"><?php if ($this->message) : ?><?php echo $this->escape('<br /><div class="module-message-quote"><div class="module-message-quote-date">' . sprintf($this->translator()->_('message._share.sentByOnDate'), $this->user()->getById($this->message->sent_user)->user_name, $this->message->sent_date) . '</div><div class="module-message-quote-content">' . $this->message->content . '</div></div><br />'); ?><?php endif; ?></textarea>
+				</div>
+				
+				<input type="hidden" name="format" value="json" />
+				
+				<?php if ($this->message) : ?>
+				<input type="hidden" name="message_id" value="<?php echo $this->message->message_id; ?>" />
+				<?php endif; ?>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="messageMessageSendStandby" data-dojo-type="dojox/widget/Standby" data-dojo-props="target: 'messageMessageSendContainer', imageText: '<?php echo $this->translator(true)->_('global._share.loadingAction'); ?>'"></div>
+
+<script type="text/javascript">
+require({
+	paths: {
+		"file": "<?php echo $this->APP_STATIC_URL; ?>/modules/file"
+	}
+});
+
+require([
+	"dojo/_base/array",         
+	"dojo/dom",
+	"dojo/dom-construct",
+	"dojo/dom-style",
+	"dojo/json",
+	"dojo/on",      
+	"dojo/ready",
+	"dojo/request/xhr",
+	"dojo/sniff",
+	"dojo/topic",
+	"dijit/registry",
+	"dojo/NodeList-dom",
+	"dojo/parser",
+	"dojo/query",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/TextBox",
+	"dijit/form/ValidationTextBox",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dijit/Toolbar",
+	"dojox/widget/Standby",
+	"core/js/base/controllers/ActionProvider",
+	"core/js/base/Encoder",
+	"core/js/base/Uploader",
+	"core/js/views/UserCollectionView",
+	"file/js/views/FileFormatter"
+], function(dojoArray, dojoDom, dojoDomConstruct, dojoDomStyle, dojoJson, dojoOn, dojoReady, dojoRequestXhr, dojoSniff, dojoTopic, dijitRegistry) {
+	dojoReady(function() {
+		// Provide the actions
+		<?php foreach (array(
+						'message_attachment_delete',
+					) as $name) : ?>
+		core.js.base.controllers.ActionProvider.set("<?php echo $name; ?>", {
+			url: "<?php echo $this->url(array(), $name); ?>",
+			isAllowed: true
+		});
+		<?php endforeach; ?>
+		
+		var toUserView  = new core.js.views.UserCollectionView("messageMessageSendToAddressContainer", "to_address[]");
+		var bccUserView = new core.js.views.UserCollectionView("messageMessageSendBccAddressContainer", "bcc_address[]");
+	
+		<?php if ($this->recipients && count($this->recipients) > 0) : ?>
+		// Assign the from address to the "To" field
+		<?php foreach ($this->recipients as $recipient) : ?>
+		toUserView.addUser({
+			user_id: "<?php echo $recipient->user_id; ?>",
+			user_name: "<?php echo $recipient->user_name; ?>"
+		});
+		<?php endforeach; ?>
+		<?php endif; ?>
+
+		// Create the uploader
+		var uploader = new core.js.base.Uploader({
+			id: "messageMessageSendAttachmentUploader",
+			name: "uploadedfile",
+			flashFieldName: "uploadedfile",
+			deferredUploading: true,
+			multiple: true,
+			type: "file",
+			uploadOnSelect: true,
+			serverTimeout: 10000,
+			label: "<?php echo $this->translator(true)->_('global._share.browseFilesUploadAction'); ?>",
+			url: "<?php echo $this->url(array(), 'message_attachment_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>",
+			// Custom properties and override methods
+			appUploadType: dojoSniff("ie") ? "flash" : "html5",
+			onBegin: function() {
+				if ("html5" == this.get("appUploadType")) {
+					this.set("disabled", true);
+				}
+				dijitRegistry.byId("messageMessageSendStandby").set("imageText", "<?php echo $this->translator()->_('global._share.uploadingAction'); ?>");
+				dijitRegistry.byId("messageMessageSendStandby").show();
+			},
+			onFileComplete: function(dataArray) {
+				if ("flash" == this.get("appUploadType")) {
+					dataArray = dataArray.additionalParams.appUploadedFiles;
+					dataArray = core.js.base.Encoder.decode(dataArray);
+					this.showUploadedAttachments(dataArray);
+				}
+			},
+			onComplete: function(dataArray) {
+				dijitRegistry.byId("messageMessageSendStandby").hide();
+				if ("html5" == this.get("appUploadType")) {
+					this.set("disabled", false);
+					this.showUploadedAttachments(dataArray);
+				}
+			},
+			showUploadedAttachments: function(dataArray) {
+				if (0 == dataArray.length) {
+					dojoTopic.publish("/app/global/notification", {
+						message: "<?php echo $this->translator()->_('message.send.cannotAttachFiles'); ?>",
+						type: "error"
+					});
+					return;
+				}
+
+				dojoDomStyle.set("messageMessageSendAttachmentsContainer", "display", "block");
+				var sizeFormatter = file.js.views.FileFormatter.formatSize;
+				var deleteFileUrl = core.js.base.controllers.ActionProvider.get("message_attachment_delete").url;
+
+				dojoArray.forEach(dataArray, function(file) {
+					var div = dojoDomConstruct.create("div", {
+						style: "padding: 4px",
+						className: "messageAttachment"
+					}, "messageMessageSendAttachmentsContainer");
+					
+					// Name, extension and size of file
+					dojoDomConstruct.create("span", {
+						innerHTML: "<b>" + file.name + "</b> (." + file.extension + ", " + sizeFormatter(file.size, "0") + ")" 
+					}, div);
+					
+					// "Delete" link to remove the attachment
+					var link = dojoDomConstruct.create("a", {
+						href: "javascript: void(0);",
+						style: "padding: 0 8px",
+						innerHTML: "<?php echo $this->translator()->_('global._share.deleteAction'); ?>"
+					}, div);
+					dojoOn(link, "click", function() {
+						dojoRequestXhr(deleteFileUrl, {
+							data: {
+								path: file.path
+							},
+							handleAs: "json",
+							method: "POST"
+						}).then(function(data) {
+							if ("APP_RESULT_OK" == data.result) {
+								dojo.query(div).orphan();
+								// If there is no attachments, hide the attachments container
+								if (0 == dojo.query("#messageMessageSendAttachmentsContainer .messageAttachment").length) {
+									dojoDomStyle.set("messageMessageSendAttachmentsContainer", "display", "none");
+								}
+							}
+						});
+					});
+					
+					// Hidden input to store the file information
+					dojoDomConstruct.create("input", {
+						type: "hidden",
+						name: "attachments[]",
+						value: dojoJson.stringify(file)
+					}, div);
+				});
+			}
+		});
+		if ("html5" == uploader.get("appUploadType")) {
+			uploader.set("url", uploader.get("url") + "&uploader=html5&name=uploadedfile");
+		}
+		dojoDom.byId("messageMessageSendAttachmentUploaderContainer").appendChild(uploader.domNode);
+		uploader.startup();
+
+		// Editor to update the message's content
+		setTimeout(function() {
+			tinyMCE.init({
+				theme: "advanced",
+				plugins: "safari,spellchecker,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template",
+				theme_advanced_buttons2: "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo",
+				theme_advanced_buttons3: "link,unlink,anchor,image,cleanup,code,|,preview,|,forecolor,backcolor",
+				theme_advanced_buttons4: "tablecontrols,ltr,rtl",
+				theme_advanced_toolbar_location: "top",
+				theme_advanced_toolbar_align: "left",
+				mode: "exact",
+				width: "100%",
+				elements: "messageMessageSendContentEditor",
+				relative_urls: false,
+				content_css: "<?php echo $this->APP_STATIC_URL; ?>/modules/message/css/admin/default/styles.css",
+				remove_script_host: false,
+				oninit: function() {
+					// dojoTopic.publish("/app/global/onLoadComplete");
+				}
+			});
+		}, 200);
+	});
+});
+</script>

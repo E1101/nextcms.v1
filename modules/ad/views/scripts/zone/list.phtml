@@ -1,0 +1,98 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		ad
+ * @subpackage	views
+ * @since		1.0
+ * @version		2012-08-31
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<?php
+$this->headTitle()->set($this->translator()->_('zone.list.title'));
+?>
+
+<div id="adZoneListContainer" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="region: 'center', design: 'sidebar', gutters: false, class: 'app-container-border'">
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'top', class: 'app-content-pane'">
+		<h2 class="app-heading" style="margin: 0"><span><?php echo $this->translator()->_('zone.list.title'); ?></span></h2>
+	</div>
+
+	<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="region: 'center', gutters: false, class: 'app-content-pane'">
+		<!-- AddNewZone -->
+		<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region: 'top', style: 'margin-bottom: 8px'">
+			<div style="padding-bottom: 8px"><?php echo $this->translator()->_('zone.add.title'); ?>:</div>
+		
+			<div id="adZoneListAddZoneForm" data-dojo-type="dijit/form/Form" data-dojo-props="action: '', method: 'POST'">
+				<input id="adZoneListNewZoneNameTextBox" data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="name: 'name', required: true, style: 'width: 300px', placeHolder: '<?php echo $this->translator(true)->_('zone._share.name'); ?>', missingMessage: '<?php echo $this->translator(true)->_('zone._share.nameRequired'); ?>'" />
+				<input id="adZoneListNewZoneWidthTextBox" data-dojo-type="dijit/form/TextBox" data-dojo-props="name: 'width', style: 'width: 100px', placeHolder: '<?php echo $this->translator(true)->_('zone._share.width'); ?>'" />
+				<input id="adZoneListNewZoneHeightTextBox" data-dojo-type="dijit/form/TextBox" data-dojo-props="name: 'height', style: 'width: 100px', placeHolder: '<?php echo $this->translator(true)->_('zone._share.height'); ?>'" />
+				
+				<button id="adZoneListAddZoneButton" data-dojo-type="dijit/form/Button" data-dojo-props="type: 'button'">
+					<?php echo $this->translator()->_('global._share.addAction'); ?>
+					<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
+					require([
+						"dojo/dom-form",
+						"dojo/request/xhr",
+						"dojo/topic",
+						"dijit/registry"
+					], function(dojoDomForm, dojoRequestXhr, dojoTopic, dijitRegistry) {
+						if (dijitRegistry.byId("adZoneListAddZoneForm").validate()) {
+							dijitRegistry.byId("adZoneListStandby").show();
+							dojoRequestXhr("<?php echo $this->url(array(), 'ad_zone_add'); ?>", {
+								data: dojoDomForm.toObject("adZoneListAddZoneForm"),
+								handleAs: "json",
+								method: "POST"
+							}).then(function(data) {
+								dijitRegistry.byId("adZoneListAddZoneForm").reset();
+								dijitRegistry.byId("adZoneListStandby").hide();
+								var message = ("APP_RESULT_OK" == data.result)
+											? "<?php echo $this->translator()->_('zone.add.success'); ?>"
+											: "<?php echo $this->translator()->_('zone.add.error'); ?>";
+								dojoTopic.publish("/app/global/notification", {
+									message: message,
+									type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+								});
+
+								// Reload the zones
+								dijitRegistry.byId("adZoneListZonesPane").set("href", "<?php echo $this->url(array(), 'ad_zone_list'); ?>?format=html");						
+							});
+						}
+					});
+					</script>
+				</button>
+			</div>
+		</div>
+		<!-- /AddNewZone -->
+		
+		<!-- Zones -->
+		<div id="adZoneListZonesPane" data-dojo-type="dojox/layout/ContentPane" data-dojo-props="region: 'center', href: '<?php echo $this->url(array(), 'ad_zone_list'); ?>?format=html', loadingMessage: '<div class=app-center><div><span class=dijitContentPaneLoading><?php echo $this->translator(true)->_('global._share.loadingAction'); ?></span></div></div>'">
+		</div>
+		<!-- /Zones -->
+	</div>
+</div>
+
+<div id="adZoneListStandby" data-dojo-type="dojox/widget/Standby" data-dojo-props="target: 'adZoneListContainer', imageText: '<?php echo $this->translator(true)->_('global._share.loadingAction'); ?>'"></div>
+
+<script type="text/javascript">
+document.title = "<?php echo $this->translator()->setLanguageDir('/modules/ad/languages')->_('zone.list.title'); ?>";
+
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/TextBox",
+	"dijit/form/ValidationTextBox",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dojox/layout/ContentPane",
+	"dojox/widget/Standby"
+]);
+</script>

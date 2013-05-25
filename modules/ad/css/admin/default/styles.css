@@ -1,0 +1,32 @@
+/**
+ * NextCMS
+ *
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		ad
+ * @subpackage	css
+ * @since		1.0
+ * @version		2012-09-03
+ */
+ 
+.module-ad-banner {
+	display: inline-block;
+	margin-bottom: 20px;
+	margin-right: 15px;
+	vertical-align: top;
+	width: 75px;
+}
+.module-ad-banner img { 
+	width: 75px;
+	height: 75px;
+}
+.module-ad-banner-title {
+	margin-top: 4px;
+	text-align: center;
+}
+.module-ad-banner-grid .gridContainerZone {
+	background-color: #CFE5FA;
+}
